@@ -1,0 +1,68 @@
+/* Additions on top of global.css (which is copied verbatim from the original design). */
+
+/* Bottom nav uses router links instead of buttons */
+.nav a {
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  color: var(--muted);
+  font-size: 14px;
+  min-height: 56px;
+  border-radius: 12px;
+  text-decoration: none;
+}
+.nav a.on {
+  color: var(--red);
+  font-weight: 600;
+}
+.nav a.on svg {
+  stroke-width: 2.4;
+}
+
+/* Login: fit one screen without vertical scrolling.
+   The wrapper's bottom padding was being added on top of the 100vh login section. */
+.app.login-shell {
+  padding-bottom: 0;
+}
+.login {
+  min-height: 100vh;
+  min-height: 100dvh; /* mobile browsers: excludes the address bar */
+  padding: 24px 24px 14px;
+  gap: 10px;
+}
+.login .mark {
+  width: 64px;
+  height: 64px;
+}
+.login .mark svg {
+  width: 64px;
+  height: 64px;
+}
+.login h1 {
+  font-size: 32px;
+}
+.login .stack {
+  gap: 10px;
+}
+/* error line takes no space until there is an error to show */
+.login .err:empty {
+  display: none;
+}
+.login .link {
+  padding: 6px 10px;
+}
+.login .bkfoot {
+  padding-top: 10px;
+}
+
+/* Spin animation on the vardan wheel */
+.wheel-g {
+  transform-origin: 150px 150px;
+}
+.wheel-g.spinning {
+  transition: transform 4s cubic-bezier(0.17, 0.67, 0.2, 1);
+}
