@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { translate, translateName } from '@/i18n/translate';
+import { CENTRE_NAME } from '@/constants/config';
 import { APP_TITLE, CALENDAR } from '@/i18n/calendar';
 import { loadLang, saveLang } from '@/services/storage';
 
@@ -16,7 +17,7 @@ export function LanguageProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.title = APP_TITLE[lang];
+    document.title = `${APP_TITLE[lang]} | ${CENTRE_NAME}`;
     document.body.classList.toggle('en', lang === 'en');
     document.body.classList.toggle('gu', lang === 'gu');
   }, [lang]);
