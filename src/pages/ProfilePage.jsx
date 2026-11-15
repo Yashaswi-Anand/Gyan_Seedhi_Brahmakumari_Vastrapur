@@ -9,19 +9,17 @@ import {
   earnedBadgeIds,
   leafCount,
   levelInfo,
-  murliPts,
   streaks,
   totalChart,
   totalMurli,
   totalPts,
   treeStage,
 } from '@/services/stats';
-import { formatShort, formatTime } from '@/utils/date';
 import { sum } from '@/utils/helpers';
 
 export default function ProfilePage() {
   const { user, logout } = useApp();
-  const { t, tn, lang, cal } = useLang();
+  const { t, tn } = useLang();
   const navigate = useNavigate();
 
   const pts = totalPts(user);
@@ -30,10 +28,6 @@ export default function ProfilePage() {
   const have = earnedBadgeIds(user);
   const leaves = leafCount(user);
   const avg = user.plays.length ? Math.round(sum(user.plays, (p) => p.acc) / user.plays.length) : 0;
-  const history = user.plays
-    .slice()
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, 10);
   const maskedMobile = user.mobile.slice(0, 2) + '••••••' + user.mobile.slice(-2);
   const displayName = tn(user.name);
 
@@ -105,24 +99,6 @@ export default function ProfilePage() {
               );
             })}
           </div>
-        </div>
-
-        <div className="sec">
-          <h3>{t('पिछले अभ्यास')}</h3>
-          {history.length ? (
-            history.map((p) => (
-              <div className="hist" key={p.date}>
-                <span>
-                  {formatShort(p.date, cal, lang)} · {t(`सटीकता ${p.acc}%`)}
-                </span>
-                <b>{t(`${p.points} अंक`)}</b>
-                <span className="tiny">{t(`समय ${formatTime(p.timeSec)}`)}</span>
-                <span className="tiny">{t(`मुरली ${murliPts(p)} · चार्ट ${p.cPts != null ? p.cPts : '—'}`)}</span>
-              </div>
-            ))
-          ) : (
-            <p className="muted">{t('अभी कोई अभ्यास नहीं हुआ। आज का अभ्यास शुरू करें।')}</p>
-          )}
         </div>
 
         <button
