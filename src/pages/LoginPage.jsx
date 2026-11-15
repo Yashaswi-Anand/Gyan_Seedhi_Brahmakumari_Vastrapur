@@ -113,11 +113,6 @@ export default function LoginPage() {
         </div>
       )}
 
-      <p className="tiny">
-        {t(
-          'आपका नंबर केवल आपकी प्रोफ़ाइल के लिए है। रैंक सूची में केवल आपका नाम दिखता है। एक बार लिखने के बाद अगले दिन अपने-आप खुल जाएगा।',
-        )}
-      </p>
       <button
         className="link"
         onClick={() => {
