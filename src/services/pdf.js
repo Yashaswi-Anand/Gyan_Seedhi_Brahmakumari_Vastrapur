@@ -12,7 +12,7 @@ function fontFamily(lang) {
   return '"Noto Sans Devanagari",sans-serif';
 }
 
-function drawPages(lang, qs, dateLabel) {
+function drawPages(lang, qs, dateLabel, heading, sub) {
   const W = 1240;
   const H = 1754;
   const M = 90;
@@ -66,8 +66,8 @@ function drawPages(lang, qs, dateLabel) {
   };
 
   newPage();
-  draw([T('ज्ञान सीढ़ी') + ' · ' + T('आज का प्रश्न-पत्र')], 46, 700, M, '#7A2438', 64);
-  draw([T('आज की मुरली') + ' · ' + dateLabel], 26, 400, M, '#835C69', 44);
+  draw([T('ज्ञान सीढ़ी') + ' · ' + T(heading)], 46, 700, M, '#7A2438', 64);
+  draw([T(sub) + ' · ' + dateLabel], 26, 400, M, '#835C69', 44);
   draw([T('नाम') + ': ______________________      ' + T('दिनांक') + ': ______________'], 26, 400, M, '#4A2231', 50);
   ctx.fillStyle = '#F3D5D6';
   ctx.fillRect(M, y, W - 2 * M, 3);
@@ -125,7 +125,7 @@ function drawPages(lang, qs, dateLabel) {
     g.fillText(CENTRE_NAME, (W - g.measureText(CENTRE_NAME).width) / 2, H - 66);
     g.font = `400 22px ${FF}`;
     g.fillStyle = '#835C69';
-    g.fillText(T('ज्ञान सीढ़ी') + ' · ' + T('आज की मुरली') + ' · ' + dateLabel, M, H - 30);
+    g.fillText(T('ज्ञान सीढ़ी') + ' · ' + T(sub) + ' · ' + dateLabel, M, H - 30);
     const r = T('पृष्ठ ') + (i + 1) + ' / ' + pages.length;
     g.fillText(r, W - M - g.measureText(r).width, H - 30);
   });
@@ -202,8 +202,18 @@ function saveBlob(blob, filename) {
 }
 
 /** Builds the day's question paper (no answers) in the given language and downloads it. */
-export async function downloadQuestionPaper(lang, questions, dateLabel) {
+/**
+ * @param dateKeyForFile date used in the file name (default today)
+ * @param heading / sub  title lines (Hindi; translated) – the teacher's date-wise paper uses
+ *                       'प्रश्न-पत्र' / 'दिनांक' instead of "today's"
+ */
+export async function downloadQuestionPaper(
+  lang,
+  questions,
+  dateLabel,
+  { dateKeyForFile = todayKey(), heading = 'आज का प्रश्न-पत्र', sub = 'आज की मुरली' } = {},
+) {
   await loadFonts();
-  const blob = toPdfBlob(drawPages(lang, questions, dateLabel));
-  saveBlob(blob, `gyan-seedhi-questions-${todayKey()}.pdf`);
+  const blob = toPdfBlob(drawPages(lang, questions, dateLabel, heading, sub));
+  saveBlob(blob, `gyan-seedhi-questions-${dateKeyForFile}.pdf`);
 }

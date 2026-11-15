@@ -5,6 +5,8 @@ import LanguageSwitch from '@/components/common/LanguageSwitch';
 import Logo from '@/components/common/Logo';
 import PointsSplit from '@/components/common/PointsSplit';
 import PracticeCalendar from '@/components/home/PracticeCalendar';
+import DatePdfCard from '@/components/teacher/DatePdfCard';
+import TopThreeCard from '@/components/teacher/TopThreeCard';
 import TreeBox from '@/components/tree/TreeBox';
 import VardanWheel from '@/components/wheel/VardanWheel';
 import { useApp } from '@/context/AppContext';
@@ -26,7 +28,7 @@ import {
 import { formatDateKey, formatLong, todayKey } from '@/utils/date';
 
 export default function HomePage() {
-  const { user } = useApp();
+  const { user, isTeacher } = useApp();
   const { t, tn, v, lang, cal } = useLang();
   const navigate = useNavigate();
   const [pdf, setPdf] = useState({ busy: false, msg: '' });
@@ -119,15 +121,23 @@ export default function HomePage() {
         </button>
       </div>
 
-      <button className="dlrow" onClick={onPdf} disabled={pdf.busy || !count}>
-        <span className="dlic">
-          <Icon name="download" size={24} />
-        </span>
-        <span>
-          <b>{t('आज के प्रश्न PDF में डाउनलोड करें')}</b>
-          <small>{t(pdf.msg || 'बिना उत्तर के, सभी प्रश्न और विकल्प')}</small>
-        </span>
-      </button>
+      {isTeacher ? (
+        // teacher: this week's top 3 students, then any date's question paper
+        <>
+          <TopThreeCard />
+          <DatePdfCard />
+        </>
+      ) : (
+        <button className="dlrow" onClick={onPdf} disabled={pdf.busy || !count}>
+          <span className="dlic">
+            <Icon name="download" size={24} />
+          </span>
+          <span>
+            <b>{t('आज के प्रश्न PDF में डाउनलोड करें')}</b>
+            <small>{t(pdf.msg || 'बिना उत्तर के, सभी प्रश्न और विकल्प')}</small>
+          </span>
+        </button>
+      )}
 
       {!played ? (
         <div className="wrow off">
@@ -167,26 +177,32 @@ export default function HomePage() {
         </button>
       )}
 
-      <div className="ptcard">
-        <div className="pth">
-          <span className="muted">{t('कुल अंक')}</span>
-          <b>{totalPts(user)}</b>
+      {/* total points and the practice calendar are for students only */}
+      {!isTeacher && (
+        <div className="ptcard">
+          <div className="pth">
+            <span className="muted">{t('कुल अंक')}</span>
+            <b>{totalPts(user)}</b>
+          </div>
+          <PointsSplit murli={totalMurli(user)} chart={totalChart(user)} />
         </div>
-        <PointsSplit murli={totalMurli(user)} chart={totalChart(user)} />
-      </div>
+      )}
 
-      <div className="tiles two">
-        <div className="tile">
-          <b>{tp ? `${tp.acc}%` : '—'}</b>
-          <span>{t('आज की सटीकता')}</span>
+      {/* today's accuracy and longest streak are personal stats: students only */}
+      {!isTeacher && (
+        <div className="tiles two">
+          <div className="tile">
+            <b>{tp ? `${tp.acc}%` : '—'}</b>
+            <span>{t('आज की सटीकता')}</span>
+          </div>
+          <div className="tile">
+            <b>{st.best}</b>
+            <span>{t('सबसे लम्बी लड़ी')}</span>
+          </div>
         </div>
-        <div className="tile">
-          <b>{st.best}</b>
-          <span>{t('सबसे लम्बी लड़ी')}</span>
-        </div>
-      </div>
+      )}
 
-      <PracticeCalendar user={user} />
+      {!isTeacher && <PracticeCalendar user={user} />}
     </>
   );
 }

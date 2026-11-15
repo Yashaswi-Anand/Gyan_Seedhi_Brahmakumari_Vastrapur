@@ -48,6 +48,12 @@ export async function fetchQuestionSet(dateKey) {
   return { date, questions: sortQuestions(live.filter((q) => q.date === date)) };
 }
 
+/** All questions saved for one date (published and drafts), in the order students see them. */
+export async function fetchQuestionsForDate(dateKey) {
+  const snap = await getDocs(query(col, where('date', '==', dateKey)));
+  return sortQuestions(snap.docs.map(fromSnap));
+}
+
 /** Live list of every question (teacher view). Returns an unsubscribe function. */
 export function watchAllQuestions(onData, onError) {
   return onSnapshot(

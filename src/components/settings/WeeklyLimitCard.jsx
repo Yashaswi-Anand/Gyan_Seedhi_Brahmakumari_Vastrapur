@@ -3,18 +3,17 @@ import Icon from '@/components/common/Icon';
 import SecretInput from '@/components/common/SecretInput';
 import { useLang } from '@/context/LanguageContext';
 import { postJson } from '@/services/serverApi';
-import { formatDateKey } from '@/utils/date';
 
 const PIN_RE = /^\d{4,8}$/;
 const digits = (v) => v.replace(/\D/g, '').slice(0, 8);
 const usd = (n) => `$${(n || 0).toFixed(n >= 10 ? 0 : 2)}`;
 
 /**
- * This week's AI usage (tracked by the app, approximate cost) and the teacher's weekly limit.
- * At 80% the AI tab shows a warning; at 100% the AI stops until next Monday.
+ * The teacher's weekly AI limit (USD), set with the settings PIN.
+ * Usage is still tracked on the server: the AI tab warns at 80% and the AI stops at 100%.
  */
 export default function WeeklyLimitCard({ status, onSaved, errorText }) {
-  const { t, cal } = useLang();
+  const { t } = useLang();
   const b = status.budget;
   const [limit, setLimit] = useState(b?.limitUsd ? String(b.limitUsd) : '');
   const [pin, setPin] = useState('');
@@ -47,38 +46,17 @@ export default function WeeklyLimitCard({ status, onSaved, errorText }) {
     }
   };
 
-  const tone = !b?.limitUsd ? 'none' : b.reached ? 'over' : b.warn ? 'warn' : 'ok';
-
   return (
     <section className="set-card stack">
       <h3>
-        <Icon name="trophy" size={18} /> {t('इस सप्ताह का AI उपयोग')}
+        <Icon name="trophy" size={18} /> {t('साप्ताहिक AI सीमा')}
       </h3>
-      {!b ? (
-        <p className="muted small">{t('उपयोग की जानकारी अभी उपलब्ध नहीं है।')}</p>
-      ) : (
-        <>
-          <p className="muted small">
-            {t('सप्ताह शुरू')}: {formatDateKey(b.weekStart, cal)} · {t(`${b.requests} अनुरोध`)}
-          </p>
-          <div className={`use-box ${tone}`}>
-            <div className="use-nums">
-              <b>{usd(b.costUsd)}</b>
-              <span>{b.limitUsd ? `/ ${usd(b.limitUsd)}` : t('(कोई सीमा नहीं)')}</span>
-            </div>
-            {b.limitUsd && (
-              <span className="use-bar" aria-hidden="true">
-                <i style={{ width: `${Math.min(100, b.pct)}%` }} />
-              </span>
-            )}
-            {tone === 'over' && <p className="use-note">{t('इस सप्ताह की सीमा पूरी हो गई। AI अगले सोमवार तक बंद रहेगा, या सीमा बढ़ाएँ।')}</p>}
-            {tone === 'warn' && <p className="use-note">{t(`सीमा का ${b.pct}% उपयोग हो चुका है।`)}</p>}
-          </div>
-          <p className="tiny">
-            {t('यह अनुमान ऐप खुद गिनता है (Claude Opus 5.5 की दरों पर)। असली बिल Anthropic Console में देखें।')}
-          </p>
-        </>
-      )}
+      <div className="use-box">
+        <div className="use-nums">
+          <b>{b?.limitUsd ? usd(b.limitUsd) : '—'}</b>
+          <span>{t(b?.limitUsd ? 'प्रति सप्ताह' : '(कोई सीमा नहीं)')}</span>
+        </div>
+      </div>
 
       <form
         className="stack"

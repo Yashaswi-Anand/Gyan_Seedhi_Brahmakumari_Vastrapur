@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/common/Icon';
+import InstallAppCard from '@/components/common/InstallAppCard';
 import TopBar from '@/components/common/TopBar';
 import GrowthTree from '@/components/tree/GrowthTree';
 import { useApp } from '@/context/AppContext';
@@ -101,14 +102,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        <InstallAppCard />
+
         <button
-          className="link"
+          className="btn line"
           onClick={() => {
             logout();
             navigate('/login', { replace: true });
           }}
         >
-          {t('दूसरा खाता खोलें')}
+          {t('लॉगआउट')}
         </button>
       </div>
     </>

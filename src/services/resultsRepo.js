@@ -3,6 +3,7 @@
    The security rules allow creating a day's result once; it can't be changed after. */
 import { collection, doc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { db } from './firebase';
+import { addDays, dateKey, todayKey } from '@/utils/date';
 import { storage } from './storage';
 
 const col = collection(db, 'results');
@@ -91,6 +92,14 @@ export function rankStudents(results) {
     prev = r;
   });
   return rows;
+}
+
+/** [from, to] date keys: week = last 7 days incl. today, month = this calendar month, all = everything. */
+export function rangeFor(scope) {
+  const today = todayKey();
+  if (scope === 'week') return [dateKey(addDays(new Date(), -6)), today];
+  if (scope === 'month') return [`${today.slice(0, 7)}-01`, `${today.slice(0, 7)}-31`];
+  return ['0000-01-01', '9999-12-31'];
 }
 
 /** Live results between two date keys (inclusive). Returns an unsubscribe function. */
