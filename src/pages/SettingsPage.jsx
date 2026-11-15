@@ -181,7 +181,7 @@ export default function SettingsPage() {
           </form>
         )}
 
-        {st && <WeeklyLimitCard status={st} onSaved={setSt} errorText={errorText} />}
+        {st && <WeeklyLimitCard status={st} />}
 
         <section className="set-card set-help">
           <h3>{t('Key कैसे बनाएँ')}</h3>
