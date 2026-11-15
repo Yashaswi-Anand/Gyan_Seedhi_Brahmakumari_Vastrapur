@@ -30,6 +30,8 @@ export function LanguageProvider({ children }) {
       t: (s) => translate(lang, s),
       /** Translate a person's name only if it is a known (demo) name. */
       tn: (s) => translateName(lang, s),
+      /** Question content: translate only an exact dictionary match, else show as typed. */
+      tq: (s) => translateName(lang, s),
       /** Pick the current language from a { hi, en, gu } object. */
       v: (o) => o[lang] || o.hi,
       cal: CALENDAR[lang],

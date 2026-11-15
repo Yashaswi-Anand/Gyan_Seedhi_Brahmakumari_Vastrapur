@@ -27,6 +27,13 @@ export function formatShort(key, cal, lang) {
   return `${d.getDate()} ${cal.months[d.getMonth()].slice(0, len)}`;
 }
 
+/** "2026-11-11" → "11 नवंबर 2026" / "11 November 2026" in the given calendar language. */
+export function formatDateKey(key, cal) {
+  if (!key) return '';
+  const d = parseDateKey(key);
+  return `${d.getDate()} ${cal.months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 /** Seconds → "m:ss". */
 export function formatTime(sec) {
   const s = Math.round(sec);

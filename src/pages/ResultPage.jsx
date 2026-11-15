@@ -5,7 +5,7 @@ import PointsSplit from '@/components/common/PointsSplit';
 import TopBar from '@/components/common/TopBar';
 import GrowthTree from '@/components/tree/GrowthTree';
 import WheelBlock from '@/components/wheel/WheelBlock';
-import { MAX_POINTS, POINTS_PER_QUESTION as PERQ } from '@/constants/config';
+import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
 import { leafCount, treeStage } from '@/services/stats';
@@ -29,18 +29,18 @@ function useCountUp(target, ms = 800) {
 }
 
 function AnswerRow({ q, r, k }) {
-  const { t } = useLang();
+  const { t, tq } = useLang();
   const self = q.type === 'self';
   const answer = self
     ? r.timeout
       ? t('समय पूरा हुआ')
       : `${r.pts} / ${PERQ}`
     : q.type === 'match'
-      ? q.pairs.map((p) => `${t(p[0])} → ${t(p[1])}`).join('\n')
-      : t(q.opts[q.ans]);
+      ? q.pairs.map((p) => `${tq(p[0])} → ${tq(p[1])}`).join('\n')
+      : tq(q.opts[q.ans]);
   const icCls = self ? (r.pts === PERQ ? 'y' : r.pts ? 'r' : 'n') : r.first ? 'y' : r.timeout ? 'n' : 'r';
   const icTxt = self ? (r.timeout ? '⏱' : r.pts) : r.first ? '✓' : r.timeout ? '⏱' : '↻';
-  const label = t(`प्रश्न ${k + 1} · `) + (self ? t('चार्ट · ') + t(q.ctxChip) : t('मुरली · ') + t(q.tag));
+  const label = t(`प्रश्न ${k + 1} · `) + (self ? t('चार्ट · ') + tq(q.ctxChip) : t('मुरली · ') + tq(q.tag));
   return (
     <details>
       <summary>
@@ -55,15 +55,15 @@ function AnswerRow({ q, r, k }) {
       </summary>
       <div className="more">
         {self ? (
-          t(q.q)
+          tq(q.q)
         ) : (
           <>
-            {t(q.exp)}
+            {tq(q.exp)}
             {q.life && (
               <>
                 <br />
                 <br />
-                {t(q.life)}
+                {tq(q.life)}
               </>
             )}
           </>
@@ -75,7 +75,7 @@ function AnswerRow({ q, r, k }) {
 
 export default function ResultPage() {
   const { user, lastQuiz } = useApp();
-  const { t, lang } = useLang();
+  const { t, lang, tq } = useLang();
   const navigate = useNavigate();
   const shown = useCountUp(lastQuiz?.summary.tot ?? 0);
 
@@ -97,7 +97,7 @@ export default function ResultPage() {
         <div className="hero2 one">
           <p className="eyebrow">{t(R.practice ? 'अभ्यास (अंक नहीं जुड़े)' : 'आज के अंक')}</p>
           <h2 className="hbig">
-            <span>{shown}</span> <small>/ {MAX_POINTS}</small>
+            <span>{shown}</span> <small>/ {qs.length * PERQ}</small>
           </h2>
           <p className="hsub">{firstLine}</p>
           <PointsSplit murli={R.mp} chart={R.sp} murliMax={R.qn * PERQ} chartMax={R.sn * PERQ} />

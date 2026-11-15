@@ -1,17 +1,15 @@
-import { POINTS_PER_QUESTION } from '@/constants/config';
 import { useLang } from '@/context/LanguageContext';
-import { CHART_QUESTIONS, MURLI_QUESTIONS } from '@/data/questions';
 import { murliPts } from '@/services/stats';
 import { parseDateKey, todayKey } from '@/utils/date';
 
-export const MURLI_MAX = MURLI_QUESTIONS.length * POINTS_PER_QUESTION;
-export const CHART_MAX = CHART_QUESTIONS.length * POINTS_PER_QUESTION;
+/** Older plays don't store their maximum marks; those days had 5 + 5 questions of 20 marks. */
+const DEFAULT_MAX = 100;
 
 /** green ≥ 80%, gold ≥ 50%, rose below */
 const accTone = (acc) => (acc >= 80 ? 'good' : acc >= 50 ? 'mid' : 'low');
 
 function ScoreBar({ label, value, max, tone }) {
-  const pct = typeof value === 'number' ? Math.round((value / max) * 100) : 0;
+  const pct = typeof value === 'number' && max ? Math.round((value / max) * 100) : 0;
   return (
     <div className={`sbar ${tone}`}>
       <span className="sbar-l">{label}</span>
@@ -32,6 +30,8 @@ export default function DayResultCard({ play }) {
   const isToday = play.date === todayKey();
   const murli = murliPts(play);
   const chart = play.cPts != null ? play.cPts : null;
+  const mMax = play.mMax ?? DEFAULT_MAX;
+  const cMax = play.cMax ?? DEFAULT_MAX;
   const total = murli + (chart ?? 0);
 
   return (
@@ -50,12 +50,12 @@ export default function DayResultCard({ play }) {
         </div>
         <div className="daytotal">
           <b>{total}</b>
-          <span>/ {MURLI_MAX + CHART_MAX}</span>
+          <span>/ {mMax + cMax}</span>
         </div>
       </div>
       <div className="daybars">
-        <ScoreBar label={t('मुरली')} value={murli} max={MURLI_MAX} tone="m" />
-        <ScoreBar label={t('चार्ट')} value={chart ?? '—'} max={CHART_MAX} tone="c" />
+        <ScoreBar label={t('मुरली')} value={murli} max={mMax} tone="m" />
+        <ScoreBar label={t('चार्ट')} value={chart ?? '—'} max={cMax} tone="c" />
       </div>
     </article>
   );

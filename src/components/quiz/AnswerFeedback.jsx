@@ -2,7 +2,7 @@ import { useLang } from '@/context/LanguageContext';
 
 /** Shown after a question is answered or times out. */
 export default function AnswerFeedback({ question, result }) {
-  const { t } = useLang();
+  const { t, tq } = useLang();
   const miss = result.timeout;
   const isSelf = question.type === 'self';
   const isMatch = question.type === 'match';
@@ -25,17 +25,19 @@ export default function AnswerFeedback({ question, result }) {
       {miss && !isMatch && (
         <div className="blk">
           <b>{t('सही उत्तर')}</b>
-          {t(question.opts[question.ans])}
+          {tq(question.opts[question.ans])}
         </div>
       )}
-      <div className="blk">
-        <b>{t('मुरली का बिंदु')}</b>
-        {t(question.exp)}
-      </div>
+      {question.exp && (
+        <div className="blk">
+          <b>{t('मुरली का बिंदु')}</b>
+          {tq(question.exp)}
+        </div>
+      )}
       {question.life && (
         <div className="blk">
           <b>{t('आपके जीवन में कैसे मदद करेगा')}</b>
-          {t(question.life)}
+          {tq(question.life)}
         </div>
       )}
     </div>

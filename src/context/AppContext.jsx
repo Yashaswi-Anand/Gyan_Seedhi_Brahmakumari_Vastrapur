@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { DEMO_ACCOUNT } from '@/constants/config';
+import { DEMO_ACCOUNT, isTeacherMobile } from '@/constants/config';
+import { syncPlays } from '@/services/resultsRepo';
 import {
   createUserRecord,
   loadSession,
@@ -31,6 +32,19 @@ export function AppProvider({ children }) {
   }, [session]);
 
   const user = session && db[session] ? db[session] : null;
+  const isTeacher = !!user && isTeacherMobile(user.mobile);
+
+  // Send this student's saved results to Firestore so the teacher's ranking includes them.
+  // Skipped for the teacher and the sample account; retried when the device comes back online.
+  const syncKey = user ? `${user.mobile}:${user.plays.length}` : '';
+  useEffect(() => {
+    if (!user || isTeacher || user.mobile === DEMO_ACCOUNT.mobile) return undefined;
+    syncPlays(user);
+    const onOnline = () => syncPlays(user);
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncKey, isTeacher]);
 
   const updateUser = useCallback(
     (fn) => {
@@ -84,8 +98,8 @@ export function AppProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ db, user, login, logout, register, openDemo, addPlay, recordSpin, lastQuiz, setLastQuiz }),
-    [db, user, login, logout, register, openDemo, addPlay, recordSpin, lastQuiz],
+    () => ({ db, user, isTeacher, login, logout, register, openDemo, addPlay, recordSpin, lastQuiz, setLastQuiz }),
+    [db, user, isTeacher, login, logout, register, openDemo, addPlay, recordSpin, lastQuiz],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

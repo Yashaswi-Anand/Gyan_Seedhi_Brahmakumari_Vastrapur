@@ -26,7 +26,7 @@ export const LANGUAGES = [
 export const APP_TITLE = { hi: 'ज्ञान सीढ़ी', en: 'Gyan Seedhi', gu: 'જ્ઞાન સીડી' };
 
 /** Option letters per language. */
-export const OPTION_LETTERS = { hi: ['क', 'ख', 'ग'], en: ['A', 'B', 'C'], gu: ['ક', 'ખ', 'ગ'] };
+export const OPTION_LETTERS = { hi: ['क', 'ख', 'ग', 'घ'], en: ['A', 'B', 'C', 'D'], gu: ['ક', 'ખ', 'ગ', 'ઘ'] };
 
 /** Native digits for small step numbers. */
 export const STEP_DIGITS = { hi: ['१', '२'], en: ['1', '2'], gu: ['૧', '૨'] };

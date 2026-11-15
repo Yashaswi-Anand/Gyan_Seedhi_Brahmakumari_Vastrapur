@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import AnswerFeedback from '@/components/quiz/AnswerFeedback';
 import Lifelines from '@/components/quiz/Lifelines';
 import MatchBoard from '@/components/quiz/MatchBoard';
@@ -11,17 +11,28 @@ import QuizHeader from '@/components/quiz/QuizHeader';
 import SelfScoreInput from '@/components/quiz/SelfScoreInput';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
-import { buildQuestions } from '@/data/questions';
+import { useQuestions } from '@/context/QuestionsContext';
 import { useQuizEngine } from '@/hooks/useQuizEngine';
 import { buildResult } from '@/services/scoring';
 import { hasPlayedToday } from '@/services/stats';
 
+/** Waits for today's questions, then runs the quiz. */
 export default function QuizPage() {
+  const { user } = useApp();
+  const { status, questions, date } = useQuestions();
+  const { t, tq } = useLang();
+
+  if (status === 'loading') return <p className="note" style={{ margin: 16 }}>{t('प्रश्न लोड हो रहे हैं…')}</p>;
+  if (!questions.length) return <Navigate to="/" replace />;
+  return <Quiz key={date} questions={questions} practice={hasPlayedToday(user)} />;
+}
+
+function Quiz({ questions, practice }) {
   const { user, addPlay, setLastQuiz } = useApp();
-  const { t } = useLang();
+  const { t, tq } = useLang();
   const navigate = useNavigate();
-  // Fixed for the whole attempt, even after today's play gets saved.
-  const [setup] = useState(() => ({ qs: buildQuestions(), practice: hasPlayedToday(user) }));
+  // Fixed for the whole attempt, even after today's play gets saved or questions change.
+  const [setup] = useState(() => ({ qs: questions, practice }));
   const { game, q, quit, question, timeLeft, isLast, actions } = useQuizEngine(setup.qs, setup.practice);
 
   useEffect(() => {
@@ -42,7 +53,11 @@ export default function QuizPage() {
   return (
     <>
       <QuizHeader index={game.i} total={game.qs.length} timeLeft={timeLeft} onClose={actions.quitAsk} />
-      <ProgressLadder total={game.qs.length} index={game.i} />
+      <ProgressLadder
+        total={game.qs.length}
+        index={game.i}
+        gapAt={game.qs.findIndex((x) => x.type === 'self')}
+      />
 
       {game.practice && (
         <p className="note" style={{ margin: '10px 16px 0' }}>
@@ -52,7 +67,7 @@ export default function QuizPage() {
 
       <Lifelines
         canFifty={game.fifty && canLifeline && question.opts.length > 2}
-        canHint={game.hint && canLifeline}
+        canHint={game.hint && canLifeline && !!question.hint}
         onFifty={actions.fifty}
         onHint={actions.hint}
       />
@@ -61,7 +76,7 @@ export default function QuizPage() {
 
       {q.hint && (
         <div className="hintbox">
-          <b>{t('संकेत:')}</b> {t(question.hint)}
+          <b>{t('संकेत:')}</b> {tq(question.hint)}
         </div>
       )}
 

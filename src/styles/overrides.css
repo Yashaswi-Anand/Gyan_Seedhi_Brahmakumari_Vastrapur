@@ -59,6 +59,14 @@
   padding-top: 10px;
 }
 
+/* Quiz step bar: the gap sits before the first chart question, whatever the set size */
+.steps i:nth-child(6) {
+  margin-left: 0;
+}
+.steps i.gap {
+  margin-left: 8px;
+}
+
 /* Spin animation on the vardan wheel */
 .wheel-g {
   transform-origin: 150px 150px;

@@ -3,7 +3,7 @@ import { STEP_DIGITS } from '@/i18n/calendar';
 
 /** "Match the pairs" question: pick a word on the left, then its partner on the right. */
 export default function MatchBoard({ question, state, onLeft, onRight }) {
-  const { t, lang } = useLang();
+  const { t, lang, tq } = useLang();
   const np = question.pairs.length;
   const selected = state.mL != null;
   const [one, two] = STEP_DIGITS[lang];
@@ -30,7 +30,7 @@ export default function MatchBoard({ question, state, onLeft, onRight }) {
                 onClick={() => onLeft(k)}
                 disabled={ok || state.done}
               >
-                {t(p[0])}
+                {tq(p[0])}
                 {ok && badge(mi)}
               </button>
             );
@@ -47,7 +47,7 @@ export default function MatchBoard({ question, state, onLeft, onRight }) {
                 onClick={() => onRight(pos)}
                 disabled={ok || state.done}
               >
-                {t(question.pairs[r][1])}
+                {tq(question.pairs[r][1])}
                 {ok && badge(mi)}
               </button>
             );

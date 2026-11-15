@@ -1,4 +1,5 @@
 /* Turns a finished quiz into a result summary and (once a day) a saved play. */
+import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
 import { BADGES } from '@/data/badges';
 import { todayKey } from '@/utils/date';
 import { sum } from '@/utils/helpers';
@@ -12,9 +13,10 @@ export function summarizeQuiz(qs, res) {
   const qn = qs.filter((q) => q.type !== 'self').length;
   const sn = qs.length - qn;
   const sp = sum(res.filter((_, k) => isSelf(k)), (r) => r.pts);
-  const acc = Math.round((first / qn) * 100);
+  const acc = qn ? Math.round((first / qn) * 100) : 0;
   const jodi = qs.some((q, k) => q.type === 'match' && res[k] && res[k].first);
-  return { tot, first, time, qn, sn, sp, mp: tot - sp, acc, jodi };
+  // maximum marks depend on how many questions the teacher set for the day
+  return { tot, first, time, qn, sn, sp, mp: tot - sp, acc, jodi, mMax: qn * PERQ, cMax: sn * PERQ };
 }
 
 /**
@@ -31,6 +33,8 @@ export function buildResult(user, qs, res, practice) {
       points: s.tot,
       mPts: s.mp,
       cPts: s.sp,
+      mMax: s.mMax,
+      cMax: s.cMax,
       first: s.first,
       total: qs.length,
       acc: s.acc,

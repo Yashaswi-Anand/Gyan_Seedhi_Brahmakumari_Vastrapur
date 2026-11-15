@@ -1,10 +1,9 @@
 /* Question paper PDF (no answers).
    Each A4 page is drawn on a canvas so the browser shapes Hindi / Gujarati text correctly,
    then the JPEG pages are wrapped in a minimal PDF file. No PDF library needed. */
-import { CENTRE_NAME, POINTS_PER_QUESTION, QUIZ_DATE } from '@/constants/config';
-import { buildQuestions } from '@/data/questions';
+import { CENTRE_NAME, POINTS_PER_QUESTION } from '@/constants/config';
 import { OPTION_LETTERS } from '@/i18n/calendar';
-import { translate } from '@/i18n/translate';
+import { translate, translateName } from '@/i18n/translate';
 import { todayKey } from '@/utils/date';
 
 function fontFamily(lang) {
@@ -13,8 +12,7 @@ function fontFamily(lang) {
   return '"Noto Sans Devanagari",sans-serif';
 }
 
-function drawPages(lang) {
-  const qs = buildQuestions();
+function drawPages(lang, qs, dateLabel) {
   const W = 1240;
   const H = 1754;
   const M = 90;
@@ -22,6 +20,8 @@ function drawPages(lang) {
   const FF = fontFamily(lang);
   const LT = OPTION_LETTERS[lang];
   const T = (s) => translate(lang, String(s));
+  // question content: exact dictionary match only, otherwise as the teacher typed it
+  const TQ = (s) => translateName(lang, String(s ?? ''));
   let ctx;
   let y;
 
@@ -67,7 +67,7 @@ function drawPages(lang) {
 
   newPage();
   draw([T('ज्ञान सीढ़ी') + ' · ' + T('आज का प्रश्न-पत्र')], 46, 700, M, '#7A2438', 64);
-  draw([T('आज की मुरली · ' + QUIZ_DATE)], 26, 400, M, '#835C69', 44);
+  draw([T('आज की मुरली') + ' · ' + dateLabel], 26, 400, M, '#835C69', 44);
   draw([T('नाम') + ': ______________________      ' + T('दिनांक') + ': ______________'], 26, 400, M, '#4A2231', 50);
   ctx.fillStyle = '#F3D5D6';
   ctx.fillRect(M, y, W - 2 * M, 3);
@@ -83,17 +83,19 @@ function drawPages(lang) {
     y += 6;
   };
 
+  const qn = qs.filter((x) => x.type !== 'self').length;
   qs.forEach((q, k) => {
-    if (k === 0) section('मुरली प्रश्न (1–5) · हर प्रश्न 20 अंक', '#C2455A');
-    if (q.type === 'self' && qs[k - 1].type !== 'self') {
-      y += 14;
-      section('चार्ट प्रश्न (6–10) · हर प्रश्न 20 अंक', '#A87A22');
+    const marks = ` · ${T('हर प्रश्न ')}${POINTS_PER_QUESTION}${T(' अंक')}`;
+    if (k === 0 && q.type !== 'self') section(`${T('मुरली प्रश्न')} (1–${qn})${marks}`, '#C2455A');
+    if (q.type === 'self' && (k === 0 || qs[k - 1].type !== 'self')) {
+      if (k > 0) y += 14;
+      section(`${T('चार्ट प्रश्न')} (${k + 1}–${qs.length})${marks}`, '#A87A22');
     }
-    const sub = T(q.type === 'self' ? q.ctxChip : q.tag);
-    const ql = wrap(T(q.q), 29, 600, TW);
+    const sub = TQ(q.type === 'self' ? q.ctxChip : q.tag);
+    const ql = wrap(TQ(q.q), 29, 600, TW);
     const ol = [];
     if (q.type === 'self') ol.push([wrap('________ / ' + POINTS_PER_QUESTION, 27, 400, TW), '']);
-    else q.opts.forEach((o, i) => ol.push([wrap(T(o), 27, 400, TW - 58), LT[i] + ')']));
+    else q.opts.forEach((o, i) => ol.push([wrap(TQ(o), 27, 400, TW - 58), LT[i] + ')']));
     const h = 36 + ql.length * 44 + 14 + ol.reduce((s, x) => s + x[0].length * 40 + 10, 0) + 30;
     fit(h);
     draw([sub], 22, 600, IN, '#835C69', 36);
@@ -123,7 +125,7 @@ function drawPages(lang) {
     g.fillText(CENTRE_NAME, (W - g.measureText(CENTRE_NAME).width) / 2, H - 66);
     g.font = `400 22px ${FF}`;
     g.fillStyle = '#835C69';
-    g.fillText(T('ज्ञान सीढ़ी') + ' · ' + T('आज की मुरली · ' + QUIZ_DATE), M, H - 30);
+    g.fillText(T('ज्ञान सीढ़ी') + ' · ' + T('आज की मुरली') + ' · ' + dateLabel, M, H - 30);
     const r = T('पृष्ठ ') + (i + 1) + ' / ' + pages.length;
     g.fillText(r, W - M - g.measureText(r).width, H - 30);
   });
@@ -199,9 +201,9 @@ function saveBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
-/** Builds today's question paper in the given language and downloads it. */
-export async function downloadQuestionPaper(lang) {
+/** Builds the day's question paper (no answers) in the given language and downloads it. */
+export async function downloadQuestionPaper(lang, questions, dateLabel) {
   await loadFonts();
-  const blob = toPdfBlob(drawPages(lang));
+  const blob = toPdfBlob(drawPages(lang, questions, dateLabel));
   saveBlob(blob, `gyan-seedhi-questions-${todayKey()}.pdf`);
 }

@@ -43,14 +43,17 @@ for (const file of walk(src)) {
   if (file.includes(path.join('src', 'data'))) continue;
   const rel = path.relative(src, file);
   const text = fs.readFileSync(file, 'utf8');
-  for (const m of text.matchAll(/'([^'\n]*[ऀ-ॿ][^'\n]*)'|`([^`\n]*[ऀ-ॿ][^`\n]*)`/g)) {
-    add((m[1] ?? m[2]).replace(/\$\{[^}]*\}/g, '0'), rel);
+  // '…', `…` and "…" (JSX attributes such as title="…")
+  for (const m of text.matchAll(
+    /'([^'\n]*[ऀ-ॿ][^'\n]*)'|`([^`\n]*[ऀ-ॿ][^`\n]*)`|"([^"\n]*[ऀ-ॿ][^"\n]*)"/g,
+  )) {
+    add((m[1] ?? m[2] ?? m[3]).replace(/\$\{[^}]*\}/g, '0'), rel);
   }
 }
 
 // Strings intentionally kept in Hindi (per-language objects or language-specific branches)
 const SKIP = [/^मुरली$|^चार्ट$/, /में से .* उत्तर पहली बार में सही|में से रैंक/, /^[अक-ह]$/, /^[१२]$/, /^हिन्दी$/];
-const SKIP_FILES = ['vardans.js', 'calendar.js'];
+const SKIP_FILES = ['vardans.js', 'calendar.js', 'date.js'];
 
 let missing = 0;
 for (const [s, where] of strings) {

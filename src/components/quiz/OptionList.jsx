@@ -3,7 +3,7 @@ import { OPTION_LETTERS } from '@/i18n/calendar';
 
 /** Multiple-choice options in the shuffled order for this attempt. */
 export default function OptionList({ question, state, onPick }) {
-  const { t, lang } = useLang();
+  const { t, lang, tq } = useLang();
   const letters = OPTION_LETTERS[lang];
   return (
     <div className="opts">
@@ -18,7 +18,7 @@ export default function OptionList({ question, state, onPick }) {
         return (
           <button key={k} className={cls} onClick={() => onPick(k)} disabled={state.done || gone || struck}>
             <span className="lt">{letters[pos]}</span>
-            <span className="ot">{t(question.opts[k])}</span>
+            <span className="ot">{tq(question.opts[k])}</span>
           </button>
         );
       })}

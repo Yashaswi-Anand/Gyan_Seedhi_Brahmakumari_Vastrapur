@@ -1,13 +1,13 @@
-/** Date of the murli today's question set is built from (Hindi; translated via i18n). */
-export const QUIZ_DATE = '11 नवंबर 2026';
-
 /** Marks per question (same for every question). */
 export const POINTS_PER_QUESTION = 20;
 
-/** Number of questions in a day's set. */
-export const QUESTION_COUNT = 10;
+/**
+ * Mobile numbers that get the Teacher role (Question/Answer tab and the student ranking).
+ * Note: login has no OTP, so this is a convenience check in the app, not real security.
+ */
+export const TEACHER_MOBILES = ['9427940846'];
 
-export const MAX_POINTS = POINTS_PER_QUESTION * QUESTION_COUNT;
+export const isTeacherMobile = (mobile) => TEACHER_MOBILES.includes(String(mobile));
 
 /** Seconds allowed per question. */
 export const TIME_LIMIT = 60;

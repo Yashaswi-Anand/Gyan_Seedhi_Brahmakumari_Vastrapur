@@ -1,6 +1,8 @@
-/* Today's question set.
+/* Original question set (murli of 11 November 2026).
+   Questions now live in Firestore and the teacher manages them in the Question/Answer tab.
+   This file seeds an empty database and is the offline fallback.
    Hindi text is the source of truth. English and Gujarati come from src/i18n/locales/*.json,
-   looked up by the exact Hindi string, so when you change a question here update both JSON files too.
+   looked up by the exact Hindi string; questions the teacher adds show as typed.
 
    Question types:
      mcq   – pick one option; `ans` is the index of the right option
@@ -81,10 +83,54 @@ export const CHART_QUESTIONS = [
   },
 ];
 
-/** Builds today's 10-question set: 5 murli questions followed by 5 chart questions. */
-export function buildQuestions() {
+/** Date of the murli the questions above come from. */
+export const SEED_DATE = '2026-11-11';
+
+/**
+ * The questions above in the Firestore document shape. Used to fill an empty database
+ * (scripts/seed-questions.mjs) and as the offline fallback when Firestore can't be reached.
+ */
+export function seedQuestionDocs() {
   return [
-    ...MURLI_QUESTIONS,
-    ...CHART_QUESTIONS.map((x) => ({ type: 'self', tag: 'चार्ट', ctxChip: x.t, q: x.q })),
+    ...MURLI_QUESTIONS.map((q, i) => ({
+      id: `seed-m${i + 1}`,
+      date: SEED_DATE,
+      category: 'murli',
+      tag: q.tag,
+      q: q.q,
+      opts: q.opts,
+      ans: q.ans,
+      hint: q.hint,
+      exp: q.exp,
+      order: i + 1,
+    })),
+    ...CHART_QUESTIONS.map((c, i) => ({
+      id: `seed-c${i + 1}`,
+      date: SEED_DATE,
+      category: 'chart',
+      title: c.t,
+      q: c.q,
+      order: 100 + i,
+    })),
   ];
 }
+
+/** Firestore question document → the shape the quiz engine uses. */
+export function toQuizQuestion(d) {
+  if (d.category === 'chart') {
+    return { id: d.id, type: 'self', tag: 'चार्ट', ctxChip: d.title || '', q: d.q };
+  }
+  return {
+    id: d.id,
+    type: 'mcq',
+    tag: d.tag || 'सही उत्तर चुनें',
+    q: d.q,
+    opts: d.opts,
+    ans: d.ans,
+    hint: d.hint || '',
+    exp: d.exp || '',
+  };
+}
+
+/** Builds the quiz from a day's question documents (murli first, then chart). */
+export const buildQuestions = (docs) => docs.map(toQuizQuestion);

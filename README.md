@@ -61,11 +61,29 @@ The app uses hash routing (`/#/rank`), so `dist/` works on any static host witho
         └── overrides.css      Small additions for React (nav links, wheel spin)
 ```
 
-## Changing the daily questions
+## Teacher role and daily questions
 
-1. Edit `src/data/questions.js` (Hindi) and `QUIZ_DATE` in `src/constants/config.js`.
-2. Add the English and Gujarati translations to `src/i18n/locales/en.json` and `gu.json`. Each key is the **exact** Hindi string.
-3. Run `npm run check:i18n` to catch anything you missed.
+The mobile number in `TEACHER_MOBILES` (`src/constants/config.js`, currently `9427940846`) gets the **Teacher** role:
+
+- **प्रश्न/उत्तर tab**: every question, grouped by date (newest first), showing category (Murli/Chart), options, correct answer, hint and murli point. The teacher can **add**, **edit** (including the date) and **delete** questions, with a confirmation step before deleting.
+- **परिणाम tab**: every student's Murli, Chart and total marks for this week, this month or all time, ranked by total. The top 3 are highlighted, ties share a rank (1, 1, 3), and the list updates live.
+
+Each day's quiz uses the questions dated today. If there are none, it uses the most recent earlier date that has questions. Questions the teacher types show exactly as written in every language. Only the original built-in set has English and Gujarati translations.
+
+## Firebase (database)
+
+Questions and student results are stored in **Cloud Firestore** (Firebase project `gyan-seedhi`, location Mumbai, free Spark plan).
+
+| Collection | Document | Written by |
+|---|---|---|
+| `questions` | one per question: `date`, `category` (`murli`/`chart`), `q`, `opts`, `ans`, `hint`, `exp`, `tag`, `title`, `order` | Teacher (Q/A tab) |
+| `results` | id `{mobile}_{date}`: `name`, `mPts`, `cPts`, `points`, `acc`, `timeSec`, … | Each student's app, once per day |
+
+- The web config in `src/services/firebase.js` is public by design. Access is controlled by **`firestore.rules`**. If you change that file, paste it into Firebase console → Firestore → Rules and press **Publish**.
+- The rules check the format of every write, and make results write-once (a day's score can't be changed or deleted from the app).
+- **Limitation:** login has no OTP, so the database can't verify who the teacher is. The teacher tabs are hidden from students, but someone with technical skill could still edit questions. To lock this down, add Firebase Authentication (phone OTP or email) and require it in the `questions` rules.
+- `npm run seed:questions` copies the original 10 questions into an empty database. It does nothing if questions already exist.
+- If Firestore can't be reached, the app falls back to the built-in questions so the quiz still works.
 
 ## Scoring
 
@@ -80,6 +98,7 @@ Only the first attempt each day counts. Replays are marked as practice.
 
 ## Notes
 
-- Data lives in the browser's localStorage on each phone (`gs2_users`, `gs2_session`, `gs2_lang`). There is no backend yet, so the Rank tab shows only the signed-in member's own results: one card per practice date with accuracy and murli points.
+- Each member's own history also stays in the browser's localStorage (`gs2_users`, `gs2_session`, `gs2_lang`). The Results tab shows a student their own day-by-day results, and every saved day is also uploaded to Firestore for the teacher.
+- "नमूना खाता देखें" (the sample account) and the teacher's own practice are never uploaded.
 - "नमूना खाता देखें" opens a sample account with 10 days of history.
 - The quiz engine still supports a "match the pairs" question type (`type: 'match'`, `pairs: [[left, right], …]`), though today's set doesn't use it.

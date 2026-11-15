@@ -4,6 +4,7 @@ import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
 import DayResultCard from '@/components/results/DayResultCard';
 import ResultsSummary from '@/components/results/ResultsSummary';
+import Leaderboard from '@/components/teacher/Leaderboard';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
 import { playsInScope, playsNewestFirst } from '@/services/stats';
@@ -26,8 +27,21 @@ function byMonth(plays) {
   return groups;
 }
 
-/** Rank tab: the signed-in member's own results, one card per practice date. */
+/** Results tab: students see their own day-by-day results; the teacher sees every student ranked. */
 export default function RankPage() {
+  const { isTeacher } = useApp();
+  if (isTeacher) {
+    return (
+      <>
+        <TopBar title="विद्यार्थियों के परिणाम" />
+        <Leaderboard />
+      </>
+    );
+  }
+  return <MyResults />;
+}
+
+function MyResults() {
   const { user } = useApp();
   const { t, cal } = useLang();
   const navigate = useNavigate();

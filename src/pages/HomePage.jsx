@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/common/Icon';
 import LanguageSwitch from '@/components/common/LanguageSwitch';
@@ -7,9 +7,9 @@ import PointsSplit from '@/components/common/PointsSplit';
 import PracticeCalendar from '@/components/home/PracticeCalendar';
 import TreeBox from '@/components/tree/TreeBox';
 import VardanWheel from '@/components/wheel/VardanWheel';
-import { MAX_POINTS, QUESTION_COUNT, QUIZ_DATE } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
+import { useQuestions } from '@/context/QuestionsContext';
 import { wishAt } from '@/data/vardans';
 import { downloadQuestionPaper } from '@/services/pdf';
 import {
@@ -23,7 +23,7 @@ import {
   totalMurli,
   totalPts,
 } from '@/services/stats';
-import { formatLong, todayKey } from '@/utils/date';
+import { formatDateKey, formatLong, todayKey } from '@/utils/date';
 
 export default function HomePage() {
   const { user } = useApp();
@@ -36,12 +36,19 @@ export default function HomePage() {
   const leaves = leafCount(user);
   const spun = user.spins[todayKey()];
   const tp = todaysPlay(user);
+  const { status: qStatus, date: qDate, questions, reload } = useQuestions();
+  const count = questions.length;
+
+  // pick up questions the teacher added or changed since the app opened
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   const onPdf = async () => {
-    if (pdf.busy) return;
+    if (pdf.busy || !count) return;
     setPdf({ busy: true, msg: 'PDF बन रही है…' });
     try {
-      await downloadQuestionPaper(lang);
+      await downloadQuestionPaper(lang, questions, formatDateKey(qDate, cal));
       setPdf({ busy: false, msg: 'PDF डाउनलोड हो गई।' });
     } catch {
       setPdf({ busy: false, msg: 'PDF तैयार नहीं हो पाई। फिर से कोशिश करें।' });
@@ -74,38 +81,45 @@ export default function HomePage() {
 
       <div className="hero2">
         <div>
-          <p className="eyebrow">{t(`आज की मुरली · ${QUIZ_DATE}`)}</p>
+          <p className="eyebrow">
+            {t('आज की मुरली')}
+            {qDate ? ` · ${formatDateKey(qDate, cal)}` : ''}
+          </p>
           <h2 className="hbig">
             {played ? (
               t('आज का अभ्यास पूरा')
+            ) : qStatus === 'loading' ? (
+              t('प्रश्न लोड हो रहे हैं…')
+            ) : !count ? (
+              t('आज के प्रश्न अभी उपलब्ध नहीं हैं')
             ) : (
               <>
                 {/* dictionary key is " प्रश्न<br>" (from the original HTML), so translate with it and drop the tag */}
-                {t(`${QUESTION_COUNT} प्रश्न<br>`).replace('<br>', '')}
+                {t(`${count} प्रश्न<br>`).replace('<br>', '')}
                 <br />
-                {t(`${QUESTION_COUNT} मिनट`)}
+                {t(`${count} मिनट`)}
               </>
             )}
           </h2>
           <p className="hsub">
             {played ? (
               <>
-                {t(`आज के अंक ${tp.points} / ${MAX_POINTS}`)}
+                {t(`आज के अंक ${tp.points} / ${(tp.mMax ?? 100) + (tp.cMax ?? 100)}`)}
                 <br />
                 {t(`मुरली ${murliPts(tp)} · चार्ट ${chartPts(tp)}`)}
               </>
-            ) : (
+            ) : count ? (
               t('हर प्रश्न के लिए 1 मिनट')
-            )}
+            ) : null}
           </p>
         </div>
         <TreeBox leaves={leaves} />
-        <button className="btn white" onClick={() => navigate('/quiz')}>
+        <button className="btn white" onClick={() => navigate('/quiz')} disabled={!count}>
           {t(played ? 'फिर से अभ्यास (अंक नहीं जुड़ेंगे)' : 'अभ्यास शुरू करें')}
         </button>
       </div>
 
-      <button className="dlrow" onClick={onPdf} disabled={pdf.busy}>
+      <button className="dlrow" onClick={onPdf} disabled={pdf.busy || !count}>
         <span className="dlic">
           <Icon name="download" size={24} />
         </span>
