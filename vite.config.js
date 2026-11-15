@@ -9,6 +9,8 @@ import { fileURLToPath, URL } from 'node:url';
 const DEV_ROUTES = {
   '/api/translate': ['/server/translate.js', 'handleTranslateRequest'],
   '/api/qa-chat': ['/server/qaChat.js', 'handleQaChatRequest'],
+  '/api/settings': ['/server/settings.js', 'handleSettingsRequest'],
+  '/api/murli': ['/server/murli.js', 'handleMurliRequest'],
 };
 
 function serverApiForDev(env) {
@@ -26,7 +28,11 @@ function serverApiForDev(env) {
               body: req.method === 'POST' ? Buffer.concat(chunks) : undefined,
             });
             const mod = await server.ssrLoadModule(file);
-            const response = await mod[handlerName](request, { apiKey: env.ANTHROPIC_API_KEY });
+            // key from the Settings tab (stored in .data/), else ANTHROPIC_API_KEY from .env.local
+            const { getClaudeKey } = await server.ssrLoadModule('/server/secrets.js');
+            const envKey = env.ANTHROPIC_API_KEY || '';
+            const apiKey = await getClaudeKey({ dev: true, envKey });
+            const response = await mod[handlerName](request, { apiKey, envKey, dev: true });
             res.statusCode = response.status;
             res.setHeader('content-type', 'application/json');
             res.end(await response.text());

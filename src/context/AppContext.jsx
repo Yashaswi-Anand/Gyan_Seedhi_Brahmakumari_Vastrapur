@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { AppContext } from './contextObjects';
 import { DEMO_ACCOUNT, isTeacherMobile } from '@/constants/config';
 import { syncPlays } from '@/services/resultsRepo';
 import {
@@ -9,8 +10,6 @@ import {
   saveUsers,
 } from '@/services/storage';
 import { addDays, dateKey, todayKey } from '@/utils/date';
-
-const AppContext = createContext(null);
 
 /** Sample history for the demo account: [daysAgo, murliPts, firstTryRight, timeSec, chartPts]. */
 const DEMO_HISTORY = [

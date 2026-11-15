@@ -24,6 +24,7 @@ export async function postJson(path, payload) {
   if (!res.ok || data.error || !text.trim()) {
     const err = new Error(data.message || 'request_failed');
     err.code = data.error || (text.trim() ? `http_${res.status}` : 'cut_off');
+    err.data = data; // extra details, e.g. triesLeft for a wrong PIN
     throw err;
   }
   return data;
@@ -36,6 +37,8 @@ export function serverErrorMessage(err) {
       return 'Claude सेवा अभी सेट नहीं है (Claude API key नहीं मिली)।';
     case 'offline':
       return 'इंटरनेट नहीं है। फिर से कोशिश करें।';
+    case 'weekly_limit':
+      return 'इस सप्ताह की AI सीमा पूरी हो गई। सेटिंग्स में सीमा बढ़ाएँ या अगले सोमवार तक रुकें।';
     case 'busy':
       return 'अभी बहुत अनुरोध हैं। एक मिनट बाद फिर कोशिश करें।';
     case 'too_large':

@@ -34,10 +34,11 @@ service cloud.firestore {
             && (!('gu' in d.i18n) || validVersion(d.i18n.gu)));
     }
 
-    // questions/{id}: one question for one date
+    // questions/{id}: one question for one date (published == false means a draft students don't see)
     function validQuestion(d) {
-      return d.keys().hasOnly(['date', 'category', 'q', 'opts', 'ans', 'hint', 'exp', 'tag', 'title', 'i18n', 'order', 'createdAt', 'updatedAt'])
+      return d.keys().hasOnly(['date', 'category', 'q', 'opts', 'ans', 'hint', 'exp', 'tag', 'title', 'i18n', 'published', 'order', 'createdAt', 'updatedAt'])
         && validI18n(d)
+        && (!('published' in d) || d.published is bool)
         && isDateKey(d.date)
         && d.category in ['murli', 'chart']
         && isText(d.q, 1000)

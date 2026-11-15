@@ -1,10 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { QuestionsContext } from './contextObjects';
 import { SEED_DATE, buildQuestions, seedQuestionDocs } from '@/data/questions';
 import { registerQuestionTranslations } from '@/i18n/translate';
 import { fetchQuestionSet } from '@/services/questionsRepo';
 import { todayKey } from '@/utils/date';
-
-const QuestionsContext = createContext(null);
 
 /**
  * Today's question set from Firestore: questions dated today, or the latest earlier date.

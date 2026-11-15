@@ -3,6 +3,8 @@
      { date: 'YYYY-MM-DD', category: 'murli' | 'chart', q,
        opts?: string[], ans?: number, hint?, exp?, tag?,   // murli (multiple choice)
        title?,                                            // chart (self check, 0–20)
+       i18n?: { hi, en, gu },                              // translations
+       published?: boolean,                                // false = draft (students don't see it)
        order: number, createdAt, updatedAt } */
 import {
   addDoc,
@@ -17,6 +19,7 @@ import {
   serverTimestamp,
   setDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -30,16 +33,19 @@ export function sortQuestions(list) {
   return list.slice().sort((a, b) => rank(a) - rank(b) || (a.order ?? 0) - (b.order ?? 0));
 }
 
+/** Drafts (published === false) are hidden from students; older questions have no flag = published. */
+export const isPublished = (q) => q.published !== false;
+
 /**
- * The question set for a day: questions dated `dateKey`, or if there are none,
- * the most recent earlier date that has questions. Returns { date, questions }.
+ * The question set for a day: published questions dated `dateKey`, or if there are none,
+ * the most recent earlier date that has published questions. Returns { date, questions }.
  */
 export async function fetchQuestionSet(dateKey) {
-  const latest = await getDocs(query(col, where('date', '<=', dateKey), orderBy('date', 'desc'), limit(1)));
-  if (latest.empty) return { date: null, questions: [] };
-  const date = latest.docs[0].data().date;
-  const same = await getDocs(query(col, where('date', '==', date)));
-  return { date, questions: sortQuestions(same.docs.map(fromSnap)) };
+  const recent = await getDocs(query(col, where('date', '<=', dateKey), orderBy('date', 'desc'), limit(200)));
+  const live = recent.docs.map(fromSnap).filter(isPublished);
+  if (!live.length) return { date: null, questions: [] };
+  const date = live[0].date; // newest date first
+  return { date, questions: sortQuestions(live.filter((q) => q.date === date)) };
 }
 
 /** Live list of every question (teacher view). Returns an unsubscribe function. */
@@ -81,15 +87,41 @@ function clean(input) {
   return out;
 }
 
-export function addQuestion(input) {
-  return addDoc(col, { ...clean(input), order: Date.now(), createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+/** @param published false saves a draft that students can't see until it is published */
+export function addQuestion(input, { published = true } = {}) {
+  return addDoc(col, {
+    ...clean(input),
+    published,
+    order: Date.now(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
 }
 
-/** Replaces the question's content; fields cleared in the form are removed. */
-export function updateQuestion(id, input, existing) {
-  const data = { ...clean(input), order: existing?.order ?? Date.now(), updatedAt: serverTimestamp() };
+/**
+ * Replaces the question's content; fields cleared in the form are removed.
+ * @param published new draft/published state; by default the question keeps its current state
+ */
+export function updateQuestion(id, input, existing, { published } = {}) {
+  const data = {
+    ...clean(input),
+    published: published ?? (existing ? isPublished(existing) : true),
+    order: existing?.order ?? Date.now(),
+    updatedAt: serverTimestamp(),
+  };
   if (existing?.createdAt) data.createdAt = existing.createdAt;
   return setDoc(doc(db, 'questions', id), data);
+}
+
+/** Makes drafts visible to students (one batch write). */
+export async function publishQuestions(ids) {
+  for (let i = 0; i < ids.length; i += 400) {
+    const batch = writeBatch(db);
+    ids.slice(i, i + 400).forEach((id) =>
+      batch.update(doc(db, 'questions', id), { published: true, updatedAt: serverTimestamp() }),
+    );
+    await batch.commit();
+  }
 }
 
 export const deleteQuestion = (id) => deleteDoc(doc(db, 'questions', id));

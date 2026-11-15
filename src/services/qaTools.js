@@ -1,7 +1,10 @@
-/* Runs the Q/A chat's tool calls in the browser.
+/* Runs the AI chat's tool calls in the browser.
    - list_questions runs straight away (read-only).
    - propose_* calls are checked here, shown to the teacher as cards, and only written to
-     Firestore when the teacher taps Apply. */
+     Firestore when the teacher taps Apply.
+   - Limits: questions only (no tools exist for users or results), and only questions dated
+     today or later; new / changed questions are saved as drafts until the teacher publishes. */
+import { todayKey } from '@/utils/date';
 import { addQuestion, deleteQuestion, sortQuestions, updateQuestion } from './questionsRepo';
 
 const LANGS = ['hi', 'en', 'gu'];
@@ -36,6 +39,7 @@ export function runListQuestions(input, all) {
       ans: q.category === 'murli' ? q.ans : null,
       title: q.title || '',
       languages: q.i18n ? LANGS.filter((l) => q.i18n[l]) : ['hi'],
+      published: q.published !== false,
     }));
   return JSON.stringify({ from, to, count: rows.length, questions: rows });
 }
@@ -82,8 +86,15 @@ export function checkQuestion(q) {
   };
 }
 
-/** Checks a whole proposal. Returns { error } or the cleaned data the card shows and saves. */
-export function checkProposal(name, input, all) {
+/** AI limit: only today's or future dates may be added, changed or deleted. */
+const pastError = (date, today) =>
+  `${date} is in the past. You may only add, change or delete questions dated today (${today}) or later; past questions and their answers are kept as they are.`;
+
+/**
+ * Checks a whole proposal. Returns { error } or the cleaned data the card shows and saves.
+ * The AI may only touch questions dated today or later (checked again when Apply is tapped).
+ */
+export function checkProposal(name, input, all, today = todayKey()) {
   const byId = new Map(all.map((q) => [q.id, q]));
   if (name === 'propose_add_questions') {
     const list = Array.isArray(input?.questions) ? input.questions : [];
@@ -93,6 +104,7 @@ export function checkProposal(name, input, all) {
     for (const [i, q] of list.entries()) {
       const r = checkQuestion(q);
       if (r.error) return { error: `question ${i + 1}: ${r.error}` };
+      if (r.question.date < today) return { error: `question ${i + 1}: ${pastError(r.question.date, today)}`, past: true };
       questions.push(r.question);
     }
     return { questions };
@@ -100,29 +112,46 @@ export function checkProposal(name, input, all) {
   if (name === 'propose_update_question') {
     const existing = byId.get(input?.id);
     if (!existing) return { error: `no question with id ${input?.id}; call list_questions first` };
+    if (existing.date < today) return { error: pastError(existing.date, today), past: true };
     const r = checkQuestion(input?.question);
     if (r.error) return { error: r.error };
+    if (r.question.date < today) return { error: pastError(r.question.date, today), past: true };
     return { existing, question: r.question };
   }
   if (name === 'propose_delete_questions') {
     const ids = Array.isArray(input?.ids) ? input.ids : [];
     const found = ids.map((id) => byId.get(id)).filter(Boolean);
     if (!found.length) return { error: 'none of these ids exist; call list_questions first' };
+    const past = found.find((q) => q.date < today);
+    if (past) return { error: pastError(past.date, today), past: true };
     return { questions: found, missing: ids.filter((id) => !byId.has(id)) };
   }
   return { error: `unknown tool ${name}` };
 }
 
-/** Writes an approved proposal to Firestore. Returns the tool result text for Claude. */
-export async function applyProposal(name, checked) {
+/**
+ * Writes an approved proposal to Firestore. Returns the tool result text for Claude.
+ * New and changed questions are saved as drafts: students see them only after the teacher
+ * taps Publish.
+ */
+export async function applyProposal(name, checked, today = todayKey()) {
+  // the date may have changed since the card was shown: check the limit again
+  const dates = [
+    ...(checked.questions || []).map((q) => q.date),
+    checked.existing?.date,
+    checked.question?.date,
+  ].filter(Boolean);
+  const past = dates.find((d) => d < today);
+  if (past) throw Object.assign(new Error('past'), { code: 'past', date: past });
+
   if (name === 'propose_add_questions') {
     const ids = [];
-    for (const q of checked.questions) ids.push((await addQuestion(q)).id);
-    return `APPLIED by the teacher. Added ${ids.length} question(s). New ids: ${ids.join(', ')}`;
+    for (const q of checked.questions) ids.push((await addQuestion(q, { published: false })).id);
+    return `APPLIED by the teacher. Saved ${ids.length} question(s) as DRAFTS (students can't see them until the teacher taps Publish). New ids: ${ids.join(', ')}`;
   }
   if (name === 'propose_update_question') {
-    await updateQuestion(checked.existing.id, checked.question, checked.existing);
-    return `APPLIED by the teacher. Question ${checked.existing.id} was updated.`;
+    await updateQuestion(checked.existing.id, checked.question, checked.existing, { published: false });
+    return `APPLIED by the teacher. Question ${checked.existing.id} was updated and is now a DRAFT until the teacher taps Publish.`;
   }
   if (name === 'propose_delete_questions') {
     for (const q of checked.questions) await deleteQuestion(q.id);

@@ -66,13 +66,14 @@ const APPLY = {
   propose_delete_questions: 'हाँ, हटाएँ',
 };
 const DONE = {
-  propose_add_questions: 'जोड़ दिए गए',
-  propose_update_question: 'बदल दिया गया',
+  propose_add_questions: 'ड्राफ्ट में सहेजे गए — प्रकाशित करना बाकी',
+  propose_update_question: 'ड्राफ्ट में सहेजा गया — प्रकाशित करना बाकी',
   propose_delete_questions: 'हटा दिए गए',
 };
 
 /**
- * A change Claude proposes. status: 'pending' | 'working' | 'applied' | 'cancelled' | 'invalid' | 'failed'
+ * A change Claude proposes.
+ * status: 'pending' | 'working' | 'applied' | 'cancelled' | 'invalid' | 'failed' | 'blocked'
  */
 export default function ProposalCard({ name, input, checked, status, numbers, onApply, onCancel }) {
   const { t } = useLang();
@@ -87,7 +88,13 @@ export default function ProposalCard({ name, input, checked, status, numbers, on
       </div>
 
       {checked?.error ? (
-        <p className="pv-invalid">{t('Claude का प्रस्ताव अधूरा था; उसे ठीक करने को कहा गया है।')}</p>
+        <p className="pv-invalid">
+          {t(
+            checked.past
+              ? 'पिछली तारीख के प्रश्न AI से नहीं बदले जा सकते। कोई बदलाव नहीं हुआ।'
+              : 'Claude का प्रस्ताव अधूरा था; उसे ठीक करने को कहा गया है।',
+          )}
+        </p>
       ) : name === 'propose_add_questions' ? (
         checked.questions.map((q, i) => <QuestionPreview key={i} q={q} />)
       ) : name === 'propose_update_question' ? (
@@ -117,6 +124,9 @@ export default function ProposalCard({ name, input, checked, status, numbers, on
         </p>
       )}
       {status === 'cancelled' && <p className="pv-status">{t('रद्द किया गया')}</p>}
+      {status === 'blocked' && (
+        <p className="pv-status bad">{t('पिछली तारीख के प्रश्न AI से नहीं बदले जा सकते। कोई बदलाव नहीं हुआ।')}</p>
+      )}
       {status === 'failed' && <p className="pv-status bad">{t('सहेजा नहीं जा सका। इंटरनेट जाँचकर फिर से कोशिश करें।')}</p>}
     </div>
   );

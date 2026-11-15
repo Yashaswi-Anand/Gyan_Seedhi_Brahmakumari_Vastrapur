@@ -178,6 +178,8 @@ export default function QuestionForm({ initial, onSave, onClose }) {
       setError([
         err.code === 'no_key'
           ? 'अनुवाद सेवा अभी सेट नहीं है (Claude API key नहीं मिली)।'
+          : err.code === 'weekly_limit'
+            ? 'इस सप्ताह की AI सीमा पूरी हो गई। सेटिंग्स में सीमा बढ़ाएँ या अगले सोमवार तक रुकें।'
           : err.code === 'offline'
             ? 'इंटरनेट नहीं है। फिर से कोशिश करें।'
             : 'अनुवाद नहीं हो पाया। फिर से कोशिश करें या स्वयं लिखें।',

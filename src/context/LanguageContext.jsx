@@ -1,10 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { LanguageContext } from './contextObjects';
 import { translate, translateName } from '@/i18n/translate';
 import { CENTRE_NAME } from '@/constants/config';
 import { APP_TITLE, CALENDAR } from '@/i18n/calendar';
 import { loadLang, saveLang } from '@/services/storage';
-
-const LanguageContext = createContext(null);
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(loadLang);

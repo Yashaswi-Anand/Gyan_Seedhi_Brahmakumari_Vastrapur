@@ -3,6 +3,7 @@
    API key never reaches the browser. Used by netlify/functions/translate.mjs and vite.config.js. */
 import { ApiError, BK_LANGUAGE_RULES, FALLBACK, MODEL, errorBody, makeClient, mapClaudeError } from './claude.js';
 import { readJson, streamJsonResult } from './http.js';
+import { assertWithinBudget, recordUsage } from './usage.js';
 
 export const LANGS = ['hi', 'en', 'gu'];
 const LIMITS = { q: 1000, opt: 200, hint: 500, exp: 1000, title: 120, opts: 4 };
@@ -56,9 +57,10 @@ export function cleanInput(body) {
 }
 
 /** Calls Claude and returns { hi, en, gu }, each { q, opts, hint, exp, title }. */
-export async function translateQuestion(body, { apiKey } = {}) {
+export async function translateQuestion(body, { apiKey, dev = false } = {}) {
   const input = cleanInput(body);
   const client = makeClient(apiKey);
+  await assertWithinBudget({ dev }); // the teacher's weekly limit
 
   let response;
   try {
@@ -76,6 +78,7 @@ export async function translateQuestion(body, { apiKey } = {}) {
   } catch (err) {
     throw mapClaudeError(err);
   }
+  await recordUsage(MODEL, response.usage, { dev });
 
   if (response.stop_reason === 'refusal') throw new ApiError(422, 'refusal', 'This text could not be translated.');
   if (response.stop_reason === 'max_tokens') {
@@ -104,8 +107,8 @@ export async function translateQuestion(body, { apiKey } = {}) {
 }
 
 /** POST /api/translate */
-export async function handleTranslateRequest(request, { apiKey } = {}) {
+export async function handleTranslateRequest(request, { apiKey, dev = false } = {}) {
   const { body, error } = await readJson(request, 20000);
   if (error) return error;
-  return streamJsonResult(() => translateQuestion(body, { apiKey }), errorBody);
+  return streamJsonResult(() => translateQuestion(body, { apiKey, dev }), errorBody);
 }

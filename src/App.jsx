@@ -10,6 +10,7 @@ import QuestionsAdminPage from '@/pages/QuestionsAdminPage';
 import QuizPage from '@/pages/QuizPage';
 import RankPage from '@/pages/RankPage';
 import ResultPage from '@/pages/ResultPage';
+import SettingsPage from '@/pages/SettingsPage';
 import WheelPage from '@/pages/WheelPage';
 
 function LoginRoute() {
@@ -46,6 +47,14 @@ export default function App() {
                   element={
                     <TeacherOnly>
                       <QuestionsAdminPage />
+                    </TeacherOnly>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <TeacherOnly>
+                      <SettingsPage />
                     </TeacherOnly>
                   }
                 />

@@ -8,6 +8,8 @@ dist
 .env.local
 .env.*.local
 .netlify
+# local dev storage for the Claude key / settings PIN (Settings tab)
+.data
 
 # local Claude Code settings (machine-specific permissions)
 .claude/settings.local.json

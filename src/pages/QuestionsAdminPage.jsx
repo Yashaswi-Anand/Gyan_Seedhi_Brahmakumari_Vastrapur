@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
+import DraftsBar from '@/components/teacher/DraftsBar';
 import QaChat from '@/components/teacher/QaChat';
 import QuestionForm from '@/components/teacher/QuestionForm';
 import { useLang } from '@/context/LanguageContext';
@@ -35,6 +36,7 @@ function QuestionItem({ q, n, onEdit, onDelete }) {
       <div className="qa-top">
         <span className="qa-n">{n}</span>
         <span className={`chip cat${murli ? '' : ' ch'}`}>{t(murli ? 'मुरली' : 'चार्ट')}</span>
+        {q.published === false && <span className="chip draft">{t('ड्राफ्ट')}</span>}
         {murli && q.tag && <span className="chip">{tq(q.tag)}</span>}
         {!murli && q.title && <span className="chip gold">{tq(q.title)}</span>}
         <span className="qa-langs" title={t('भाषा')}>
@@ -159,6 +161,10 @@ export default function QuestionsAdminPage() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="pad qa-drafts">
+        <DraftsBar questions={list || []} />
       </div>
 
       {view === 'chat' ? (
