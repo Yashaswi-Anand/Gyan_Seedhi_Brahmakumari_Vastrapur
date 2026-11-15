@@ -17,8 +17,6 @@ import {
   hasPlayedToday,
   leafCount,
   murliPts,
-  myRank,
-  rankRows,
   streaks,
   todaysPlay,
   totalChart,
@@ -38,7 +36,6 @@ export default function HomePage() {
   const leaves = leafCount(user);
   const spun = user.spins[todayKey()];
   const tp = todaysPlay(user);
-  const rank = played ? myRank(rankRows(user, 'today'))?.rank : null;
 
   const onPdf = async () => {
     if (pdf.busy) return;
@@ -166,8 +163,8 @@ export default function HomePage() {
 
       <div className="tiles two">
         <div className="tile">
-          <b>{rank ? `#${rank}` : '—'}</b>
-          <span>{t('आज की रैंक')}</span>
+          <b>{tp ? `${tp.acc}%` : '—'}</b>
+          <span>{t('आज की सटीकता')}</span>
         </div>
         <div className="tile">
           <b>{st.best}</b>

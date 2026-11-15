@@ -15,12 +15,6 @@ export const TIME_LIMIT = 60;
 /** Total-points thresholds for each level (level 1 starts at 0). */
 export const LEVELS = [0, 100, 300, 600, 1000, 1600, 2400];
 
-/** Sample names used to fill the centre rank list until real members join. */
-export const DEMO_NAMES = [
-  'रमेश भाई', 'सुनीता बहन', 'अरुण भाई', 'मीना बहन', 'हितेश भाई',
-  'कविता बहन', 'दिनेश भाई', 'पूनम बहन', 'जयेश भाई', 'लता बहन',
-];
-
 /** Mobile number and name of the built-in sample account. */
 export const DEMO_ACCOUNT = { mobile: '9000000000', name: 'सुमन बहन (नमूना)', role: 'home' };
 

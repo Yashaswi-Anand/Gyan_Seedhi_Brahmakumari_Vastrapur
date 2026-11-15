@@ -2,7 +2,7 @@
 import { BADGES } from '@/data/badges';
 import { todayKey } from '@/utils/date';
 import { sum } from '@/utils/helpers';
-import { earnedBadgeIds, hasPlayedToday, rankRows } from './stats';
+import { earnedBadgeIds, hasPlayedToday } from './stats';
 
 export function summarizeQuiz(qs, res) {
   const isSelf = (k) => qs[k].type === 'self';
@@ -25,7 +25,6 @@ export function buildResult(user, qs, res, practice) {
   const s = summarizeQuiz(qs, res);
   let play = null;
   let newB = [];
-  let rank = null;
   if (!practice && !hasPlayedToday(user)) {
     play = {
       date: todayKey(),
@@ -42,7 +41,7 @@ export function buildResult(user, qs, res, practice) {
     const before = earnedBadgeIds(user);
     const after = earnedBadgeIds(updated);
     newB = BADGES.filter((b) => after[b.id] && !before[b.id]);
-    rank = rankRows(updated, 'today');
   }
-  return { play, summary: { ...s, newB, practice, rank } };
+  // saved = this attempt was recorded as today's play (not a practice replay)
+  return { play, summary: { ...s, newB, practice, saved: !!play } };
 }

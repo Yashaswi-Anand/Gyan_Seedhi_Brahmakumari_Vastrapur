@@ -8,7 +8,7 @@ import WheelBlock from '@/components/wheel/WheelBlock';
 import { MAX_POINTS, POINTS_PER_QUESTION as PERQ } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
-import { leafCount, myRank, treeStage } from '@/services/stats';
+import { leafCount, treeStage } from '@/services/stats';
 import { formatTime } from '@/utils/date';
 import { prefersReducedMotion } from '@/utils/helpers';
 
@@ -81,7 +81,6 @@ export default function ResultPage() {
 
   if (!lastQuiz) return <Navigate to="/" replace />;
   const { qs, res, summary: R } = lastQuiz;
-  const me = R.rank ? myRank(R.rank) : null;
   const leaves = leafCount(user);
 
   const firstLine =
@@ -90,13 +89,6 @@ export default function ResultPage() {
       : lang === 'gu'
         ? `${R.qn} માંથી ${R.first} જવાબ પહેલી વારમાં સાચા`
         : `${R.qn} में से ${R.first} उत्तर पहली बार में सही`;
-  const rankLabel = me
-    ? lang === 'en'
-      ? `Rank out of ${R.rank.length}`
-      : lang === 'gu'
-        ? `${R.rank.length} માંથી રેન્ક`
-        : `${R.rank.length} में से रैंक`
-    : t('रैंक');
 
   return (
     <>
@@ -111,7 +103,7 @@ export default function ResultPage() {
           <PointsSplit murli={R.mp} chart={R.sp} murliMax={R.qn * PERQ} chartMax={R.sn * PERQ} />
         </div>
 
-        <div className="tiles" style={{ margin: 0 }}>
+        <div className="tiles two" style={{ margin: 0 }}>
           <div className="tile">
             <b>{R.acc}%</b>
             <span>{t('सटीकता')}</span>
@@ -120,15 +112,11 @@ export default function ResultPage() {
             <b>{formatTime(R.time)}</b>
             <span>{t('कुल समय')}</span>
           </div>
-          <div className="tile">
-            <b>{me ? `#${me.rank}` : '—'}</b>
-            <span>{rankLabel}</span>
-          </div>
         </div>
 
         {!R.practice && <WheelBlock />}
 
-        {R.rank && (
+        {R.saved && (
           <div className="card treecard">
             <div className="treebox sm">
               <GrowthTree leaves={leaves} fresh={leaves - 1} />
@@ -165,7 +153,7 @@ export default function ResultPage() {
         </div>
 
         <button className="btn soft" onClick={() => navigate('/rank')}>
-          {t('केन्द्र रैंक देखें')}
+          {t('मेरे परिणाम देखें')}
         </button>
         <button className="btn line" onClick={() => navigate('/')}>
           {t('होम पर जाएँ')}

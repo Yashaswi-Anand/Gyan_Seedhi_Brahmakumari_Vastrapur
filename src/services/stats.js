@@ -1,8 +1,8 @@
-/* Progress maths: streaks, badges, points, levels, tree and the centre rank list. */
-import { DEMO_NAMES, LEVELS } from '@/constants/config';
+/* Progress maths: streaks, badges, points, levels, tree and day-by-day results. */
+import { LEVELS } from '@/constants/config';
 import { BADGES } from '@/data/badges';
 import { addDays, dateKey, parseDateKey, todayKey } from '@/utils/date';
-import { hash, sum } from '@/utils/helpers';
+import { sum } from '@/utils/helpers';
 
 export const hasPlayedToday = (u) => u.plays.some((p) => p.date === todayKey());
 
@@ -80,38 +80,23 @@ export function leafCount(u) {
 export const treeStage = (n) =>
   n < 1 ? 'बीज' : n <= 6 ? 'अंकुर' : n <= 13 ? 'पौधा' : n <= 27 ? 'वृक्ष' : 'फलदार वृक्ष';
 
-/* ---------- rank list ---------- */
+/* ---------- day-by-day results ---------- */
 
-function demoStat(name, scope) {
-  const x = hash(name + scope);
-  if (scope === 'today') return { pts: 80 + (x % 13) * 10, time: 200 + (x % 60) * 5 };
-  if (scope === 'week') return { pts: 500 + (x % 61) * 10, time: 1500 + (x % 40) * 20 };
-  if (scope === 'month') return { pts: 1100 + (x % 91) * 10, time: 4000 + (x % 50) * 40 };
-  return { pts: 1400 + (x % 160) * 10, time: 6000 + (x % 60) * 100 };
-}
+/** The signed-in member's saved plays, newest date first. */
+export const playsNewestFirst = (u) => u.plays.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
 
-function myStat(u, scope) {
-  let pl = u.plays;
-  const t = todayKey();
-  if (scope === 'today') pl = pl.filter((p) => p.date === t);
-  else if (scope === 'week') {
+/**
+ * Keep plays inside a period.
+ * week = the last 7 days including today, month = the current calendar month, all = everything.
+ */
+export function playsInScope(plays, scope) {
+  if (scope === 'week') {
     const from = dateKey(addDays(new Date(), -6));
-    pl = pl.filter((p) => p.date >= from);
-  } else if (scope === 'month') {
-    const mo = t.slice(0, 7);
-    pl = pl.filter((p) => p.date.slice(0, 7) === mo);
+    return plays.filter((p) => p.date >= from);
   }
-  if (!pl.length) return null;
-  return { pts: sum(pl, (p) => p.points), time: sum(pl, (p) => p.timeSec) };
+  if (scope === 'month') {
+    const mo = todayKey().slice(0, 7);
+    return plays.filter((p) => p.date.slice(0, 7) === mo);
+  }
+  return plays;
 }
-
-/** Rank by points (desc), ties broken by less time. Includes the current user once they have played. */
-export function rankRows(u, scope) {
-  const rows = DEMO_NAMES.map((n) => ({ name: n, me: false, ...demoStat(n, scope) }));
-  const m = myStat(u, scope);
-  if (m) rows.push({ name: u.name, me: true, ...m });
-  rows.sort((a, b) => b.pts - a.pts || a.time - b.time);
-  return rows.map((r, i) => ({ ...r, rank: i + 1 }));
-}
-
-export const myRank = (rows) => rows.find((r) => r.me) || null;

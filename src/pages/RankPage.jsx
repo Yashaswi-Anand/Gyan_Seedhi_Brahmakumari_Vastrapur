@@ -1,58 +1,101 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
+import DayResultCard from '@/components/results/DayResultCard';
+import ResultsSummary from '@/components/results/ResultsSummary';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
-import { hasPlayedToday, rankRows } from '@/services/stats';
-import { formatTime } from '@/utils/date';
+import { playsInScope, playsNewestFirst } from '@/services/stats';
 
 const SCOPES = [
-  ['today', 'आज'],
   ['week', 'इस सप्ताह'],
   ['month', 'इस महीने'],
   ['all', 'कुल'],
 ];
 
+/** Group plays (already newest first) by "YYYY-MM". */
+function byMonth(plays) {
+  const groups = [];
+  plays.forEach((p) => {
+    const key = p.date.slice(0, 7);
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) last.plays.push(p);
+    else groups.push({ key, plays: [p] });
+  });
+  return groups;
+}
+
+/** Rank tab: the signed-in member's own results, one card per practice date. */
 export default function RankPage() {
   const { user } = useApp();
-  const { t, tn } = useLang();
-  const [scope, setScope] = useState('today');
-  const rows = rankRows(user, scope);
+  const { t, cal } = useLang();
+  const navigate = useNavigate();
+  const [scope, setScope] = useState('week');
+  const all = playsNewestFirst(user);
+  const plays = playsInScope(all, scope);
+
+  if (!all.length) {
+    return (
+      <>
+        <TopBar title="मेरे परिणाम" />
+        <div className="pad stack results">
+          <div className="rempty">
+            <span className="rempty-ic">
+              <Icon name="trophy" size={34} />
+            </span>
+            <p>{t('अभी कोई अभ्यास नहीं हुआ। आज का अभ्यास शुरू करें।')}</p>
+            <button className="btn" onClick={() => navigate('/quiz')}>
+              {t('अभ्यास शुरू करें')}
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      <TopBar title="केन्द्र रैंक" />
-      <div className="pad stack">
-        <div className="seg">
+      <TopBar title="मेरे परिणाम" />
+      <div className="pad stack results">
+        <div className="seg three" role="tablist">
           {SCOPES.map(([id, label]) => (
-            <button key={id} className={scope === id ? 'on' : ''} onClick={() => setScope(id)}>
+            <button
+              key={id}
+              role="tab"
+              aria-selected={scope === id}
+              className={scope === id ? 'on' : ''}
+              onClick={() => setScope(id)}
+            >
               {t(label)}
             </button>
           ))}
         </div>
 
-        {scope === 'today' && !hasPlayedToday(user) && (
-          <p className="note">{t('आज का अभ्यास पूरा करने पर आपका नाम यहाँ जुड़ जाएगा।')}</p>
+        <ResultsSummary plays={plays} />
+
+        {plays.length ? (
+          byMonth(plays).map((g) => {
+            const [y, m] = g.key.split('-');
+            return (
+              <section key={g.key} className="monthgrp">
+                <h3 className="monthhead">
+                  <span>
+                    {cal.months[+m - 1]} {y}
+                  </span>
+                  <small>{t(`${g.plays.length} दिन`)}</small>
+                </h3>
+                <div className="stack" style={{ gap: 12 }}>
+                  {g.plays.map((p) => (
+                    <DayResultCard key={p.date} play={p} />
+                  ))}
+                </div>
+              </section>
+            );
+          })
+        ) : (
+          <p className="note">{t('इस अवधि में कोई अभ्यास नहीं हुआ।')}</p>
         )}
-
-        {rows.map((r) => (
-          <div key={(r.me ? 'me:' : '') + r.name} className={`rk${r.me ? ' me' : ''}${r.rank === 1 ? ' top1' : ''}`}>
-            <div className="n">{r.rank}</div>
-            <div className="nm">
-              {tn(r.name)}
-              {r.me && t(' (आप)')}
-            </div>
-            <div className="sc">
-              {t(`${r.pts} अंक`)}
-              <span>{formatTime(r.time)}</span>
-            </div>
-          </div>
-        ))}
-
-        <p className="note">
-          {t(
-            'रैंक अधिक अंकों से तय होती है; अंक बराबर हों तो कम समय वाले को आगे रखा जाता है। यह नमूना सूची है, असली सदस्य जुड़ने पर उनके नाम दिखेंगे।',
-          )}
-        </p>
       </div>
     </>
   );

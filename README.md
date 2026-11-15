@@ -2,7 +2,7 @@
 
 Daily Murli quiz app for Brahmakumaris Vastrapur: React 18 + Vite, in Hindi, Gujarati and English.
 
-Members sign in with their mobile number and answer 10 questions a day: 5 murli questions and 5 self-check "chart" questions, one minute each. Every day of practice adds a leaf to their tree. After practising they can spin the vardan wheel, and they can see centre ranks, badges, streaks and a monthly calendar. They can also download the day's question paper as a PDF.
+Members sign in with their mobile number and answer 10 questions a day: 5 murli questions and 5 self-check "chart" questions, one minute each. Every day of practice adds a leaf to their tree. After practising they can spin the vardan wheel, and they can see their day-by-day results, badges, streaks and a monthly calendar. They can also download the day's question paper as a PDF.
 
 ## Run it
 
@@ -76,10 +76,10 @@ The app uses hash routing (`/#/rank`), so `dist/` works on any static host witho
 | Later, or time ran out | 0 |
 | Chart question | the 0–20 the member enters |
 
-Only the first attempt each day counts. Replays are marked as practice. Ranks sort by points, with ties going to whoever took less time.
+Only the first attempt each day counts. Replays are marked as practice.
 
 ## Notes
 
-- Data lives in the browser's localStorage on each phone (`gs2_users`, `gs2_session`, `gs2_lang`). There is no backend yet, so ranks show **sample members** plus the signed-in person.
+- Data lives in the browser's localStorage on each phone (`gs2_users`, `gs2_session`, `gs2_lang`). There is no backend yet, so the Rank tab shows only the signed-in member's own results: one card per practice date with accuracy and murli points.
 - "नमूना खाता देखें" opens a sample account with 10 days of history.
 - The quiz engine still supports a "match the pairs" question type (`type: 'match'`, `pairs: [[left, right], …]`), though today's set doesn't use it.
