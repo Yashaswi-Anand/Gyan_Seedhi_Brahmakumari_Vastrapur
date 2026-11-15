@@ -4,7 +4,7 @@ import Icon from './Icon';
 
 const TABS = [
   { to: '/', label: 'होम', icon: 'home' },
-  { to: '/rank', label: 'रैंक', icon: 'trophy' },
+  { to: '/rank', label: 'परिणाम', icon: 'trophy' },
   { to: '/profile', label: 'प्रोफ़ाइल', icon: 'user' },
 ];
 
