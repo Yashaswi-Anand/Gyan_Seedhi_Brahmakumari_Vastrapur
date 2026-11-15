@@ -51,18 +51,33 @@ export function watchAllQuestions(onData, onError) {
   );
 }
 
+/** One language version: { q, opts?, hint?, exp?, title? } with empty optional text dropped. */
+function cleanVersion(v, category) {
+  const out = { q: String(v.q || '').trim() };
+  if (category === 'murli') {
+    out.opts = (v.opts || []).map((o) => String(o || '').trim());
+    if (v.hint?.trim()) out.hint = v.hint.trim();
+    if (v.exp?.trim()) out.exp = v.exp.trim();
+  } else if (v.title?.trim()) {
+    out.title = v.title.trim();
+  }
+  return out;
+}
+
 /** Keep only the fields the security rules allow, dropping empty optional text. */
 function clean(input) {
-  const out = { date: input.date, category: input.category, q: input.q.trim() };
+  const out = { date: input.date, category: input.category, ...cleanVersion(input, input.category) };
   if (input.category === 'murli') {
-    out.opts = input.opts.map((o) => o.trim());
     out.ans = input.ans;
     if (input.tag?.trim()) out.tag = input.tag.trim();
-    if (input.hint?.trim()) out.hint = input.hint.trim();
-    if (input.exp?.trim()) out.exp = input.exp.trim();
-  } else if (input.title?.trim()) {
-    out.title = input.title.trim();
   }
+  // translations: i18n.hi / i18n.en / i18n.gu (only languages the teacher filled in)
+  const i18n = {};
+  for (const lang of ['hi', 'en', 'gu']) {
+    const v = input.i18n?.[lang];
+    if (v?.q?.trim()) i18n[lang] = cleanVersion(v, input.category);
+  }
+  if (Object.keys(i18n).length) out.i18n = i18n;
   return out;
 }
 

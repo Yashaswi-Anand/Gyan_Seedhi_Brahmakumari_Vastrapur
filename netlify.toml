@@ -6,6 +6,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Serverless functions (POST /api/translate). Needs ANTHROPIC_API_KEY set in
+# Site configuration → Environment variables.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # Hashed asset files never change, so let browsers cache them for a year
 [[headers]]
   for = "/assets/*"

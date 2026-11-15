@@ -15,9 +15,29 @@ service cloud.firestore {
     function optText(d, k, max) { return !(k in d) || (d[k] is string && d[k].size() <= max); }
     function isIntIn(v, lo, hi) { return v is int && v >= lo && v <= hi; }
 
+    // one language version of a question inside i18n (hi / en / gu)
+    function validVersion(v) {
+      return v is map
+        && v.keys().hasOnly(['q', 'opts', 'hint', 'exp', 'title'])
+        && isText(v.q, 1000)
+        && optText(v, 'hint', 500)
+        && optText(v, 'exp', 1000)
+        && optText(v, 'title', 120)
+        && (!('opts' in v) || (v.opts is list && v.opts.size() <= 4));
+    }
+    function validI18n(d) {
+      return !('i18n' in d)
+        || (d.i18n is map
+            && d.i18n.keys().hasOnly(['hi', 'en', 'gu'])
+            && (!('hi' in d.i18n) || validVersion(d.i18n.hi))
+            && (!('en' in d.i18n) || validVersion(d.i18n.en))
+            && (!('gu' in d.i18n) || validVersion(d.i18n.gu)));
+    }
+
     // questions/{id}: one question for one date
     function validQuestion(d) {
-      return d.keys().hasOnly(['date', 'category', 'q', 'opts', 'ans', 'hint', 'exp', 'tag', 'title', 'order', 'createdAt', 'updatedAt'])
+      return d.keys().hasOnly(['date', 'category', 'q', 'opts', 'ans', 'hint', 'exp', 'tag', 'title', 'i18n', 'order', 'createdAt', 'updatedAt'])
+        && validI18n(d)
         && isDateKey(d.date)
         && d.category in ['murli', 'chart']
         && isText(d.q, 1000)

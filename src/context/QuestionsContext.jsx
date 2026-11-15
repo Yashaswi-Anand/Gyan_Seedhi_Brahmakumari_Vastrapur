@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { SEED_DATE, buildQuestions, seedQuestionDocs } from '@/data/questions';
+import { registerQuestionTranslations } from '@/i18n/translate';
 import { fetchQuestionSet } from '@/services/questionsRepo';
 import { todayKey } from '@/utils/date';
 
@@ -15,6 +16,7 @@ export function QuestionsProvider({ children }) {
   const reload = useCallback(async () => {
     try {
       const { date, questions } = await fetchQuestionSet(todayKey());
+      registerQuestionTranslations(questions); // before render, so text shows in the chosen language
       setState({ status: 'ready', date, docs: questions });
     } catch {
       setState({ status: 'offline', date: SEED_DATE, docs: seedQuestionDocs() });

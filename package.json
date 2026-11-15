@@ -12,6 +12,7 @@
     "seed:questions": "node scripts/seed-questions.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
     "firebase": "^11.10.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

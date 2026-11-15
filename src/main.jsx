@@ -5,6 +5,7 @@ import './styles/global.css';
 import './styles/overrides.css';
 import './styles/results.css';
 import './styles/teacher.css';
+import './styles/qachat.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

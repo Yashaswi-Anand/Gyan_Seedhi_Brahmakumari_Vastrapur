@@ -65,10 +65,29 @@ The app uses hash routing (`/#/rank`), so `dist/` works on any static host witho
 
 The mobile number in `TEACHER_MOBILES` (`src/constants/config.js`, currently `9427940846`) gets the **Teacher** role:
 
-- **प्रश्न/उत्तर tab**: every question, grouped by date (newest first), showing category (Murli/Chart), options, correct answer, hint and murli point. The teacher can **add**, **edit** (including the date) and **delete** questions, with a confirmation step before deleting.
+- **AI tab**: a chat with Claude. The teacher writes one instruction, for example pasting the day's murli and asking for "5 मुरली प्रश्न और 5 चार्ट प्रश्न", or "10 नवंबर के प्रश्न 3 का सही उत्तर बदलो", and Claude does the work:
+  - it can look at saved questions on its own;
+  - every **add / change / delete** shows up as a card with **Apply / Cancel**, and nothing is saved until the teacher taps Apply;
+  - questions are created in Hindi, English and Gujarati, at most 3 per step, so each step stays inside the hosting time limit;
+  - the chat is kept on the teacher's phone until they tap "नई चैट".
+- **प्रश्न सूची** (inside the same tab): every question, grouped by date (newest first), showing category (Murli/Chart), options, correct answer, hint and murli point. The teacher can also **add**, **edit** (including the date) and **delete** questions by hand, with a confirmation step before deleting.
 - **परिणाम tab**: every student's Murli, Chart and total marks for this week, this month or all time, ranked by total. The top 3 are highlighted, ties share a rank (1, 1, 3), and the list updates live.
 
-Each day's quiz uses the questions dated today. If there are none, it uses the most recent earlier date that has questions. Questions the teacher types show exactly as written in every language. Only the original built-in set has English and Gujarati translations.
+Each day's quiz uses the questions dated today. If there are none, it uses the most recent earlier date that has questions.
+
+### Translations with Claude
+
+The question form has **हिन्दी / English / ગુજરાતી** tabs. The teacher types in any one tab and presses **"Claude से अनुवाद करें"**. Claude fills the other two languages, and the teacher can correct them before saving. Each question stores all three versions (`i18n.hi / en / gu`), and students see their chosen language. A language that wasn't filled falls back to the main text.
+
+Both Claude features (`claude-opus-5-5`) run on the server, in the Netlify Functions `netlify/functions/translate.mjs` and `netlify/functions/qa-chat.mjs` (code in `server/`), so the API key never reaches the browser. Long Claude calls stream a keep-alive response, because Netlify gives streamed responses more time than normal ones (documented up to 60 s).
+
+**Setup:**
+1. Create an API key at console.anthropic.com → API keys.
+2. In Netlify, go to **Site configuration → Environment variables**, add `ANTHROPIC_API_KEY`, and redeploy.
+3. For local development, copy `.env.example` to `.env.local` and put the key there. That file is git-ignored.
+4. Set a monthly **spend limit** in the Anthropic Console. `/api/translate` has no login (like the rest of the app), so the limit protects you from misuse. Each translation is one small request.
+
+If the key is missing, the chat and the translate button say the Claude service isn't set up; the teacher can still add questions by hand in प्रश्न सूची.
 
 ## Firebase (database)
 

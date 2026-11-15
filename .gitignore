@@ -3,5 +3,11 @@ dist
 *.log
 .DS_Store
 
+# secrets (API keys) – see .env.example
+.env
+.env.local
+.env.*.local
+.netlify
+
 # local Claude Code settings (machine-specific permissions)
 .claude/settings.local.json

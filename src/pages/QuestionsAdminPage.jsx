@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
+import QaChat from '@/components/teacher/QaChat';
 import QuestionForm from '@/components/teacher/QuestionForm';
 import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
 import { OPTION_LETTERS } from '@/i18n/calendar';
+import { registerQuestionTranslations } from '@/i18n/translate';
 import {
   addQuestion,
   deleteQuestion,
@@ -35,6 +37,12 @@ function QuestionItem({ q, n, onEdit, onDelete }) {
         <span className={`chip cat${murli ? '' : ' ch'}`}>{t(murli ? 'मुरली' : 'चार्ट')}</span>
         {murli && q.tag && <span className="chip">{tq(q.tag)}</span>}
         {!murli && q.title && <span className="chip gold">{tq(q.title)}</span>}
+        <span className="qa-langs" title={t('भाषा')}>
+          {['hi', 'en', 'gu']
+            .filter((l) => q.i18n?.[l])
+            .map((l) => ({ hi: 'हि', en: 'En', gu: 'ગુ' })[l])
+            .join(' · ') || '—'}
+        </span>
       </div>
       <p className="qa-q">{tq(q.q)}</p>
 
@@ -81,7 +89,7 @@ function QuestionItem({ q, n, onEdit, onDelete }) {
   );
 }
 
-/** Teacher only: every question, date-wise, with add / edit / delete. */
+/** Teacher only: Q/A chat with Claude, plus every question date-wise with add / edit / delete. */
 export default function QuestionsAdminPage() {
   const { t, cal, tq } = useLang();
   const { reload } = useQuestions();
@@ -91,11 +99,13 @@ export default function QuestionsAdminPage() {
   const [deleting, setDeleting] = useState(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
+  const [view, setView] = useState('chat'); // 'chat' | 'list'
 
   useEffect(
     () =>
       watchAllQuestions(
         (qs) => {
+          registerQuestionTranslations(qs);
           setList(qs);
           setLoadError(false);
         },
@@ -137,7 +147,23 @@ export default function QuestionsAdminPage() {
 
   return (
     <>
-      <TopBar title="प्रश्न/उत्तर" />
+      <TopBar title="AI" />
+      <div className="pad qa-switch">
+        <div className="seg two" role="tablist">
+          {[
+            ['chat', 'चैट', 'chat'],
+            ['list', 'प्रश्न सूची', 'list'],
+          ].map(([id, label, icon]) => (
+            <button key={id} role="tab" aria-selected={view === id} className={view === id ? 'on' : ''} onClick={() => setView(id)}>
+              <Icon name={icon} size={18} /> {t(label)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {view === 'chat' ? (
+        <QaChat questions={list || []} />
+      ) : (
       <div className="pad stack qa-page">
         <button className="btn" onClick={() => setEditing({})}>
           <Icon name="plus" size={22} />
@@ -171,6 +197,7 @@ export default function QuestionsAdminPage() {
           );
         })}
       </div>
+      )}
 
       {editing && <QuestionForm initial={editing.id ? editing : null} onSave={save} onClose={() => setEditing(null)} />}
 

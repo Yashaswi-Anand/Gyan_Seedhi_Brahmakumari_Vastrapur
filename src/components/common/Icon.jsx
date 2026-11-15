@@ -30,6 +30,8 @@ const PATHS = {
   star: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />,
   back: <path d="M15 5l-7 7 7 7" />,
   plus: <path d="M12 5v14M5 12h14" />,
+  send: <path d="M4 12l16-8-6 16-2.5-6.5L4 12z" />,
+  chat: <path d="M4 5h16v11H9l-5 4V5z" />,
   edit: (
     <>
       <path d="M4 20h4L19 9l-4-4L4 16v4z" />

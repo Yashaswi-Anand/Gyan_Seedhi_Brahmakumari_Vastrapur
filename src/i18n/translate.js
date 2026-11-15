@@ -27,9 +27,38 @@ export function translate(lang, text) {
   return out;
 }
 
-/** Names are translated only when the whole name is a known key (demo names). */
+/* ---------- question translations from Firestore ----------
+   Questions the teacher adds carry their own translations (`i18n.hi / en / gu`, made with
+   Claude and reviewed by the teacher). When questions load, each source text is registered
+   here against its translations, so every screen that shows question text finds it. */
+const contentMaps = { hi: new Map(), en: new Map(), gu: new Map() };
+
+export function registerQuestionTranslations(docs) {
+  for (const d of docs || []) {
+    if (!d?.i18n) continue;
+    for (const lang of Object.keys(contentMaps)) {
+      const v = d.i18n[lang];
+      if (!v) continue;
+      const put = (src, out) => {
+        if (src && out) contentMaps[lang].set(String(src), String(out));
+      };
+      put(d.q, v.q);
+      put(d.hint, v.hint);
+      put(d.exp, v.exp);
+      put(d.title, v.title);
+      (d.opts || []).forEach((o, i) => put(o, v.opts?.[i]));
+    }
+  }
+}
+
+/**
+ * Exact-match translation (names and question content): a registered question translation,
+ * then the built-in dictionary, otherwise the text unchanged.
+ */
 export function translateName(lang, name) {
   const s = String(name ?? '');
+  const registered = contentMaps[lang]?.get(s);
+  if (registered) return registered;
   if (lang === 'hi' || !DICTS[lang]) return s;
   return DICTS[lang][s] ?? s;
 }

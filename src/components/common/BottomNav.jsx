@@ -5,7 +5,7 @@ import Icon from './Icon';
 
 const HOME = { to: '/', label: 'होम', icon: 'home' };
 const RESULTS = { to: '/rank', label: 'परिणाम', icon: 'trophy' };
-const QA = { to: '/questions', label: 'प्रश्न/उत्तर', icon: 'list' };
+const QA = { to: '/questions', label: 'AI', icon: 'chat' };
 const PROFILE = { to: '/profile', label: 'प्रोफ़ाइल', icon: 'user' };
 
 export default function BottomNav() {

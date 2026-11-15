@@ -52,7 +52,7 @@ for (const file of walk(src)) {
 }
 
 // Strings intentionally kept in Hindi (per-language objects or language-specific branches)
-const SKIP = [/^मुरली$|^चार्ट$/, /में से .* उत्तर पहली बार में सही|में से रैंक/, /^[अक-ह]$/, /^[१२]$/, /^हिन्दी$/];
+const SKIP = [/^मुरली$|^चार्ट$/, /में से .* उत्तर पहली बार में सही|में से रैंक/, /^[अक-ह]$/, /^[१२]$/, /^हिन्दी$/, /^हि$/];
 const SKIP_FILES = ['vardans.js', 'calendar.js', 'date.js'];
 
 let missing = 0;
