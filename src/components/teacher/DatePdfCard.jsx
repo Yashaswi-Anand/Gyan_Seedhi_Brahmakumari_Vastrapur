@@ -6,6 +6,7 @@ import { registerQuestionTranslations } from '@/i18n/translate';
 import { downloadQuestionPaper } from '@/services/pdf';
 import { fetchQuestionsForDate, isPublished } from '@/services/questionsRepo';
 import { formatDateKey, todayKey } from '@/utils/date';
+import DateField from '@/components/common/DateField';
 
 /** Teacher home: pick any date and download that day's question paper (no answers) as PDF. */
 export default function DatePdfCard() {
@@ -53,7 +54,7 @@ export default function DatePdfCard() {
         </div>
       </div>
       <div className="datepdf-row">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label={t('तारीख')} />
+        <DateField value={date} onChange={(e) => setDate(e.target.value)} aria-label={t('तारीख')} />
         <button className="btn" onClick={download} disabled={busy || !date}>
           {t(busy ? 'PDF बन रही है…' : 'डाउनलोड')}
         </button>

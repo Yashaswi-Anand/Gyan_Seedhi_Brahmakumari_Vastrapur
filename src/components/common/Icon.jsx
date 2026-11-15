@@ -84,6 +84,12 @@ const PATHS = {
       <path d="M8.5 11L6 3h4l2 5 2-5h4l-2.5 8" />
     </>
   ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </>
+  ),
   download: (
     <>
       <path d="M12 4v11" />

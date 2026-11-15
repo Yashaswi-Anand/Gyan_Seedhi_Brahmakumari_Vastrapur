@@ -912,17 +912,6 @@
   align-items: end;
   gap: 8px;
 }
-.qa-date {
-  width: 100%;
-  min-height: 48px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1.5px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  font: inherit;
-  font-size: 16px;
-}
 .qa-nav {
   height: 48px;
   border-radius: 12px;
@@ -943,4 +932,44 @@
 .qa-today-btn {
   grid-column: 1 / -1;
   justify-self: center;
+}
+
+/* date box that always shows DD-MM-YYYY; the real date input sits invisibly on top */
+.datefield {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-size: 16px;
+}
+.datefield:focus-within {
+  border-color: var(--red);
+}
+.datefield .df-text.empty {
+  color: var(--muted);
+}
+.datefield > svg {
+  flex: none;
+  color: var(--red-deep);
+}
+.datefield > input[type='date'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
 }

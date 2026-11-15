@@ -17,6 +17,7 @@ import {
   watchAllQuestions,
 } from '@/services/questionsRepo';
 import { formatDateKey, parseDateKey, todayKey } from '@/utils/date';
+import DateField from '@/components/common/DateField';
 
 /** Group questions by date, newest date first. */
 function byDate(list) {
@@ -196,9 +197,7 @@ export default function QuestionsAdminPage() {
             >
               <Icon name="back" size={20} />
             </button>
-            <input
-              className="qa-date"
-              type="date"
+            <DateField
               value={day}
               aria-label={t('तारीख')}
               onChange={(e) => e.target.value && setDay(e.target.value)}

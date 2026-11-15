@@ -5,6 +5,7 @@ import { OPTION_LETTERS } from '@/i18n/calendar';
 import { translateName } from '@/i18n/translate';
 import { translateWithClaude } from '@/services/translateApi';
 import { todayKey } from '@/utils/date';
+import DateField from '@/components/common/DateField';
 
 const TAGS = ['सही उत्तर चुनें', 'खाली जगह भरें', 'सही या गलत'];
 const MAX_OPTS = 4;
@@ -221,7 +222,7 @@ export default function QuestionForm({ initial, onSave, onClose }) {
         <div className="qf-row two">
           <label className="qf">
             <span>{t('तारीख')}</span>
-            <input type="date" value={f.date} onChange={(e) => set({ date: e.target.value })} required />
+            <DateField value={f.date} onChange={(e) => set({ date: e.target.value })} required />
           </label>
           <div className="qf">
             <span>{t('श्रेणी')}</span>
