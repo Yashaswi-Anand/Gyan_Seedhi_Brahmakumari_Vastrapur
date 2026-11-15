@@ -62,8 +62,8 @@ export const MURLI_QUESTIONS = [
 /** Self-check chart questions (6–10): the person enters their own marks, 0 to 20. */
 export const CHART_QUESTIONS = [
   {
-    t: 'अमृतवेला योग (4:30 से 4:45)',
-    q: 'आज अमृतवेले के योग में 4:30 से 4:45 तक सम्पूर्ण दिव्यता की धारणा के लिए स्वयं को साकार स्वरूप में अनुभव कराया?',
+    t: '15 Min अमृतवेला योग',
+    q: 'आज अमृतवेले के योग में 15 min तक सम्पूर्ण दिव्यता की धारणा के लिए स्वयं को साकार स्वरूप में अनुभव कराया?',
   },
   {
     t: 'पाँचों ट्रैफिक कंट्रोल के समय योग',
@@ -84,7 +84,7 @@ export const CHART_QUESTIONS = [
 ];
 
 /** Date of the murli the questions above come from. */
-export const SEED_DATE = '2026-11-11';
+export const SEED_DATE = '2026-11-15';
 
 /**
  * The questions above in the Firestore document shape. Used to fill an empty database

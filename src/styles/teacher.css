@@ -904,3 +904,43 @@
   gap: 4px;
   font-size: 14.5px;
 }
+
+/* question list: date filter (default today) */
+.qa-filter {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: end;
+  gap: 8px;
+}
+.qa-date {
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+.qa-nav {
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--red-deep);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.qa-nav.next svg {
+  transform: scaleX(-1);
+}
+.qa-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.qa-today-btn {
+  grid-column: 1 / -1;
+  justify-self: center;
+}

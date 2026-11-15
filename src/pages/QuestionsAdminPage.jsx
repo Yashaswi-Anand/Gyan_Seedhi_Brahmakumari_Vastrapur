@@ -102,6 +102,7 @@ export default function QuestionsAdminPage() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
   const [view, setView] = useState('chat'); // 'chat' | 'list'
+  const [day, setDay] = useState(todayKey); // date filter for the question list (default: today)
 
   useEffect(
     () =>
@@ -124,6 +125,10 @@ export default function QuestionsAdminPage() {
 
   const groups = useMemo(() => byDate(list || []), [list]);
   const today = todayKey();
+  const shown = groups.filter((g) => g.date === day);
+  // nearest dates (before / after the chosen one) that have questions, for the ‹ › buttons
+  const prevDate = groups.find((g) => g.date < day)?.date;
+  const nextDate = [...groups].reverse().find((g) => g.date > day)?.date;
 
   const save = async (form) => {
     if (editing?.id) await updateQuestion(editing.id, form, editing);
@@ -180,7 +185,48 @@ export default function QuestionsAdminPage() {
         {!list && !loadError && <p className="note">{t('प्रश्न लोड हो रहे हैं…')}</p>}
         {list && !list.length && <p className="note">{t('अभी कोई प्रश्न नहीं है। ऊपर से नया प्रश्न जोड़ें।')}</p>}
 
-        {groups.map((g) => {
+        {list && list.length > 0 && (
+          <div className="qa-filter">
+            <button
+              className="qa-nav"
+              onClick={() => setDay(prevDate)}
+              disabled={!prevDate}
+              aria-label={t('पिछली तारीख')}
+              title={t('पिछली तारीख')}
+            >
+              <Icon name="back" size={20} />
+            </button>
+            <input
+              className="qa-date"
+              type="date"
+              value={day}
+              aria-label={t('तारीख')}
+              onChange={(e) => e.target.value && setDay(e.target.value)}
+            />
+            <button
+              className="qa-nav next"
+              onClick={() => setDay(nextDate)}
+              disabled={!nextDate}
+              aria-label={t('अगली तारीख')}
+              title={t('अगली तारीख')}
+            >
+              <Icon name="back" size={20} />
+            </button>
+            {day !== today && (
+              <button className="link qa-today-btn" onClick={() => setDay(today)}>
+                {t('आज पर जाएँ')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {list && list.length > 0 && !shown.length && (
+          <p className="note">
+            {formatDateKey(day, cal)} — {t('इस तारीख के लिए कोई प्रश्न नहीं है।')}
+          </p>
+        )}
+
+        {shown.map((g) => {
           const d = parseDateKey(g.date);
           const murliN = g.questions.filter((q) => q.category === 'murli').length;
           return (
