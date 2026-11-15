@@ -72,10 +72,6 @@ export default function Leaderboard() {
           ))}
         </section>
       )}
-
-      <p className="note">
-        {t('रैंक कुल अंकों (मुरली + चार्ट) से तय होती है। बराबर अंक होने पर विद्यार्थियों को एक ही रैंक मिलती है।')}
-      </p>
     </div>
   );
 }
