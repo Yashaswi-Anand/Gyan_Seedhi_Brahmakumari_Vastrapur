@@ -6,6 +6,8 @@ import { chartPts, murliPts } from '@/services/stats';
 import { formatLong, pad, parseDateKey, todayKey } from '@/utils/date';
 
 const DEFAULT_MAX = 100;
+// short labels inside each day box
+const SHORT = { hi: ['मुरली', 'चार्ट'], en: ['Murli', 'Chart'], gu: ['મુરલી', 'ચાર્ટ'] };
 const monthIndex = (y, m) => y * 12 + m;
 
 /**
@@ -13,7 +15,8 @@ const monthIndex = (y, m) => y * 12 + m;
  * a monthly summary, ★ on full-marks days, and the day's details on tap.
  */
 export default function PracticeCalendar({ user }) {
-  const { t, cal } = useLang();
+  const { t, lang, cal } = useLang();
+  const [mLbl, cLbl] = SHORT[lang] || SHORT.hi;
   const now = new Date();
   const today = todayKey();
   const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() });
@@ -88,8 +91,14 @@ export default function PracticeCalendar({ user }) {
         {perfect && <span className="star" aria-hidden="true">★</span>}
         <span className="dn">{d}</span>
         <span className="mk">
-          <i className="m">{mp}</i>
-          <i className="c">{p.cPts != null ? p.cPts : '–'}</i>
+          <i className="m">
+            <small>{mLbl}</small>
+            {mp}
+          </i>
+          <i className="c">
+            <small>{cLbl}</small>
+            {p.cPts != null ? p.cPts : '–'}
+          </i>
         </span>
       </button>,
     );

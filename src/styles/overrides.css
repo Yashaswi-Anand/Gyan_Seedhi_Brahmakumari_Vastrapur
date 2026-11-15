@@ -286,7 +286,7 @@
 .cal .d .mk i {
   display: block;
   width: 100%;
-  padding: 3px 0;
+  padding: 3px 0 4px;
   border-radius: 6px;
   font-style: normal;
   font-size: 13.5px;
@@ -295,6 +295,15 @@
   letter-spacing: -0.3px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+.cal .d .mk i small {
+  display: block;
+  margin-bottom: 1px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.15;
+  opacity: 0.85;
 }
 .cal .d .mk i.m {
   background: var(--red-soft);
