@@ -20,7 +20,7 @@ export function numberQuestions(all) {
   return numbered;
 }
 
-/** list_questions → compact JSON for Claude. */
+/** list_questions → compact JSON for the AI. */
 export function runListQuestions(input, all) {
   const from = DATE_RE.test(input?.from_date) ? input.from_date : '0000-01-01';
   const to = DATE_RE.test(input?.to_date) ? input.to_date : '9999-12-31';
@@ -130,7 +130,7 @@ export function checkProposal(name, input, all, today = todayKey()) {
 }
 
 /**
- * Writes an approved proposal to Firestore. Returns the tool result text for Claude.
+ * Writes an approved proposal to Firestore. Returns the tool result text for the AI.
  * New and changed questions are saved as drafts: students see them only after the teacher
  * taps Publish.
  */

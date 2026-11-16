@@ -6,8 +6,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# Serverless functions (POST /api/translate). Needs ANTHROPIC_API_KEY set in
-# Site configuration → Environment variables.
+# Serverless functions (/api/qa-chat, /api/translate, /api/settings, /api/murli).
+# Needs GEMINI_API_KEY set in Site configuration → Environment variables
+# (optional GEMINI_MODEL to use another Gemini model).
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"

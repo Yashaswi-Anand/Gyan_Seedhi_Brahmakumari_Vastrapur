@@ -7,8 +7,8 @@ import { postJson, serverErrorMessage } from '@/services/serverApi';
 import { formatDateKey, todayKey } from '@/utils/date';
 import ProposalCard from './ProposalCard';
 
-const STORE_KEY = 'gs2_qa_chat_v1';
-const MAX_STEPS = 12; // Claude turns per teacher message
+const STORE_KEY = 'gs2_qa_chat_v2'; // v2: Gemini chats (v1 Claude chats can't be continued)
+const MAX_STEPS = 12; // AI turns per teacher message
 const LONG_CHAT = 70;
 const EMPTY = { messages: [], cards: {}, draft: {} };
 
@@ -31,7 +31,7 @@ function load() {
 const toolUses = (m) => (m?.role === 'assistant' && Array.isArray(m.content) ? m.content.filter((b) => b.type === 'tool_use') : []);
 const lastToolUses = (chat) => toolUses(chat.messages[chat.messages.length - 1]);
 
-/** Light formatting for Claude's replies: line breaks and **bold**. */
+/** Light formatting for the AI's replies: line breaks and **bold**. */
 function RichText({ text }) {
   return text.split('\n').map((line, i) => (
     <Fragment key={i}>
@@ -43,7 +43,7 @@ function RichText({ text }) {
   ));
 }
 
-/** Teacher's Q/A chat: one instruction, Claude does the work, the teacher approves each change. */
+/** Teacher's Q/A chat: one instruction, Gemini does the work, the teacher approves each change. */
 export default function QaChat({ questions }) {
   const { t, cal } = useLang();
   const { reload } = useQuestions();
@@ -91,7 +91,7 @@ export default function QaChat({ questions }) {
   const readyToContinue = pendingUses.length > 0 && !waitingForTeacher;
   const lastIsUser = chat.messages[chat.messages.length - 1]?.role === 'user';
 
-  /** Adds Claude's reply; runs read-only tools and checks proposals. */
+  /** Adds the AI's reply; runs read-only tools and checks proposals. */
   function addAssistant(base, content) {
     const cards = { ...base.cards };
     const draft = { ...base.draft };
@@ -116,7 +116,7 @@ export default function QaChat({ questions }) {
     return { messages: [...base.messages, { role: 'assistant', content }], cards, draft };
   }
 
-  /** Fetches every murli Claude asked for in its last turn (read-only, no approval needed). */
+  /** Fetches every murli the AI asked for in its last turn (read-only, no approval needed). */
   async function runMurliFetches(base) {
     let cur = base;
     for (const u of lastToolUses(cur).filter((x) => x.name === 'fetch_murli' && !cur.draft[x.id])) {
@@ -146,7 +146,7 @@ ${m.text}`,
     return cur;
   }
 
-  /** Sends all tool results for Claude's last turn in one message. */
+  /** Sends all tool results for the AI's last turn in one message. */
   function withToolResults(base) {
     const uses = lastToolUses(base);
     const draft = { ...base.draft };
@@ -169,7 +169,7 @@ ${m.text}`,
         cur = addAssistant(cur, data.content || []);
         commit(cur);
         if (data.stop_reason === 'refusal') {
-          setError('Claude ने यह अनुरोध पूरा नहीं किया। कृपया दूसरे शब्दों में लिखें।');
+          setError('AI ने यह अनुरोध पूरा नहीं किया। कृपया दूसरे शब्दों में लिखें।');
           break;
         }
         cur = await runMurliFetches(cur);
@@ -241,7 +241,7 @@ ${m.text}`,
     <div className="qachat">
       <div className="qc-bar">
         <span className="qc-model">
-          <Icon name="star" size={16} /> Claude
+          <Icon name="star" size={16} /> Gemini
         </span>
         <button className="link" onClick={newChat} disabled={busy || !chat.messages.length}>
           + {t('नई चैट')}
@@ -343,7 +343,7 @@ ${m.text}`,
               <i />
               <i />
             </span>
-            {t('Claude काम कर रहा है…')}
+            {t('Gemini काम कर रहा है…')}
           </div>
         )}
         {error && (

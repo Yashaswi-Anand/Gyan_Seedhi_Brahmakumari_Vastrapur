@@ -329,7 +329,7 @@
   background: var(--mist);
 }
 
-/* language tabs + Claude translate button in the form */
+/* language tabs + AI translate button in the form */
 .qf-langs {
   display: flex;
   flex-direction: column;

@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 
 /**
  * Local development only: serves the /api/* endpoints the same way the Netlify Functions do,
- * using ANTHROPIC_API_KEY from .env.local (never bundled into the app).
+ * using GEMINI_API_KEY from .env.local (never bundled into the app).
  */
 const DEV_ROUTES = {
   '/api/translate': ['/server/translate.js', 'handleTranslateRequest'],
@@ -28,10 +28,11 @@ function serverApiForDev(env) {
               body: req.method === 'POST' ? Buffer.concat(chunks) : undefined,
             });
             const mod = await server.ssrLoadModule(file);
-            // key from the Settings tab (stored in .data/), else ANTHROPIC_API_KEY from .env.local
-            const { getClaudeKey } = await server.ssrLoadModule('/server/secrets.js');
-            const envKey = env.ANTHROPIC_API_KEY || '';
-            const apiKey = await getClaudeKey({ dev: true, envKey });
+            // key from the Settings tab (stored in .data/), else GEMINI_API_KEY from .env.local
+            const { getAiKey } = await server.ssrLoadModule('/server/secrets.js');
+            const envKey = env.GEMINI_API_KEY || '';
+            if (env.GEMINI_MODEL) process.env.GEMINI_MODEL = env.GEMINI_MODEL;
+            const apiKey = await getAiKey({ dev: true, envKey });
             const response = await mod[handlerName](request, { apiKey, envKey, dev: true });
             res.statusCode = response.status;
             res.setHeader('content-type', 'application/json');

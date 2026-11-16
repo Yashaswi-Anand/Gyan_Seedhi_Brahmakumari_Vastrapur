@@ -16,7 +16,7 @@ export async function readJson(request, maxChars) {
 }
 
 /**
- * Runs slow work (a Claude call) and streams the JSON result.
+ * Runs slow work (an AI call) and streams the JSON result.
  * A space is sent every few seconds so the connection stays open: Netlify allows a streamed
  * response to run much longer than a normal one, and JSON.parse ignores the leading spaces.
  * Errors are sent as { error, message } in the body (the status is already 200 by then).

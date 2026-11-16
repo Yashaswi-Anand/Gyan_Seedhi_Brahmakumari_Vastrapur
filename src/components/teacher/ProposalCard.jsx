@@ -72,7 +72,7 @@ const DONE = {
 };
 
 /**
- * A change Claude proposes.
+ * A change the AI proposes.
  * status: 'pending' | 'working' | 'applied' | 'cancelled' | 'invalid' | 'failed' | 'blocked'
  */
 export default function ProposalCard({ name, input, checked, status, numbers, onApply, onCancel }) {
@@ -92,7 +92,7 @@ export default function ProposalCard({ name, input, checked, status, numbers, on
           {t(
             checked.past
               ? 'पिछली तारीख के प्रश्न AI से नहीं बदले जा सकते। कोई बदलाव नहीं हुआ।'
-              : 'Claude का प्रस्ताव अधूरा था; उसे ठीक करने को कहा गया है।',
+              : 'AI का प्रस्ताव अधूरा था; उसे ठीक करने को कहा गया है।',
           )}
         </p>
       ) : name === 'propose_add_questions' ? (

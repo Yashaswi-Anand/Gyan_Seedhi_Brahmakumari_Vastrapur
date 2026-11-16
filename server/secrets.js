@@ -1,8 +1,9 @@
-/* Server-only storage: the Claude API key, the settings PIN, the weekly limit and usage.
+/* Server-only storage: the Gemini API key, the settings PIN, the weekly limit and usage.
    - On Netlify: Netlify Blobs (private to the site's functions; never sent to browsers)
    - Local dev:  .data/<name>.json (git-ignored)
-   The key set in the app's Settings tab wins; otherwise ANTHROPIC_API_KEY from the
-   environment is used. */
+   The key set in the app's Settings tab wins; otherwise GEMINI_API_KEY from the
+   environment is used. (The store names still say "claude": they also hold the PIN and the
+   weekly limit, so they were kept when the app moved to Gemini.) */
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
@@ -36,15 +37,15 @@ export async function writeBlob(name, data, { dev = false } = {}) {
   await (await blobStore()).setJSON(name, data);
 }
 
-/** { apiKey?, pinHash?, pinSalt?, fails?, lockedUntil?, weeklyLimitUsd?, updatedAt? } */
+/** { geminiKey?, pinHash?, pinSalt?, fails?, lockedUntil?, weeklyLimitUsd?, updatedAt? } */
 export const readSettings = (opts) => readBlob(SETTINGS, opts);
 export const writeSettings = (data, opts) => writeBlob(SETTINGS, data, opts);
 
-/** The key the Claude endpoints should use: the one set in the app, else the environment variable. */
-export async function getClaudeKey({ dev = false, envKey = '' } = {}) {
+/** The key the AI endpoints should use: the one set in the app, else the environment variable. */
+export async function getAiKey({ dev = false, envKey = '' } = {}) {
   try {
     const s = await readSettings({ dev });
-    if (s.apiKey) return s.apiKey;
+    if (s.geminiKey) return s.geminiKey;
   } catch (err) {
     console.error('could not read settings store', err);
   }

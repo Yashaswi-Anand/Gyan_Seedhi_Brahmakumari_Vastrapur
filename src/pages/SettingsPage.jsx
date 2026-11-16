@@ -18,11 +18,11 @@ function errorText(err, t) {
     case 'locked':
       return t(`बहुत बार गलत PIN। ${d.minutes || 15} मिनट बाद फिर कोशिश करें।`);
     case 'invalid_key':
-      return t('यह key काम नहीं कर रही। Anthropic Console से सही key कॉपी करें।');
+      return t('यह key काम नहीं कर रही। Google AI Studio से सही key कॉपी करें।');
     case 'check_failed':
-      return t('Key जाँची नहीं जा सकी (Anthropic से जवाब नहीं आया)। थोड़ी देर बाद फिर कोशिश करें।');
+      return t('Key जाँची नहीं जा सकी (Google से जवाब नहीं आया)। थोड़ी देर बाद फिर कोशिश करें।');
     case 'bad_key_format':
-      return t('Key "sk-ant-" से शुरू होनी चाहिए।');
+      return t('यह Gemini API key जैसी नहीं लगती। पूरी key कॉपी करके पेस्ट करें।');
     case 'pin_required':
     case 'bad_pin_format':
       return t('PIN 4 से 8 अंकों का होना चाहिए।');
@@ -37,7 +37,7 @@ function errorText(err, t) {
   }
 }
 
-/** Teacher only: change the Claude API key the AI features use (e.g. to switch account). */
+/** Teacher only: change the Gemini API key the AI features use (e.g. to switch account). */
 export default function SettingsPage() {
   const { t } = useLang();
   const [st, setSt] = useState(null);
@@ -88,7 +88,7 @@ export default function SettingsPage() {
 
   const save = (e) => {
     e.preventDefault();
-    if (!key.trim()) return setMsg({ ok: '', err: 'नई Claude API key लिखें।' });
+    if (!key.trim()) return setMsg({ ok: '', err: 'नई Gemini API key लिखें।' });
     if (!firstTime && !PIN_RE.test(pin)) return setMsg({ ok: '', err: 'अपना सेटिंग्स PIN लिखें।' });
     if (wantsNewPin) {
       if (!PIN_RE.test(newPin)) return setMsg({ ok: '', err: 'PIN 4 से 8 अंकों का होना चाहिए।' });
@@ -111,7 +111,7 @@ export default function SettingsPage() {
       <div className="pad stack settings">
         <section className="set-card">
           <h3>
-            <Icon name="star" size={18} /> {t('Claude API key')}
+            <Icon name="star" size={18} /> {t('Gemini API key')}
           </h3>
           {loadErr && <p className="err">{errorText(loadErr, t)}</p>}
           {!st && !loadErr && <p className="muted small">{t('लोड हो रहा है…')}</p>}
@@ -135,8 +135,8 @@ export default function SettingsPage() {
           <form className="set-card stack" onSubmit={save} autoComplete="off">
             <h3>{t(st.configured ? 'Key बदलें' : 'Key जोड़ें')}</h3>
             <label className="qf">
-              <span>{t('नई Claude API key')}</span>
-              <SecretInput value={key} onChange={(e) => setKey(e.target.value)} placeholder="sk-ant-…" />
+              <span>{t('नई Gemini API key')}</span>
+              <SecretInput value={key} onChange={(e) => setKey(e.target.value)} placeholder="AIza…" />
             </label>
 
             {!firstTime && (
@@ -186,10 +186,10 @@ export default function SettingsPage() {
         <section className="set-card set-help">
           <h3>{t('Key कैसे बनाएँ')}</h3>
           <ol>
-            <li>{t('console.anthropic.com पर अपने Anthropic खाते से लॉगिन करें।')}</li>
-            <li>{t('Settings → API keys → "Create key" दबाएँ और key कॉपी करें।')}</li>
+            <li>{t('aistudio.google.com/apikey खोलें और अपने Google खाते से लॉगिन करें।')}</li>
+            <li>{t('"Create API key" दबाएँ और key कॉपी करें।')}</li>
             <li>{t('यहाँ key पेस्ट करके सहेजें। ऐप key को जाँचकर सर्वर पर सुरक्षित रखता है; फ़ोन पर सिर्फ़ अंतिम 4 अक्षर दिखते हैं।')}</li>
-            <li>{t('Anthropic Console में मासिक खर्च सीमा (spend limit) ज़रूर लगाएँ।')}</li>
+            <li>{t('मुफ़्त (free) योजना में सीमित अनुरोध मिलते हैं, और Google इस डेटा से अपने मॉडल सुधार सकता है। बिलिंग चालू करें तो खर्च सीमा ज़रूर लगाएँ।')}</li>
           </ol>
         </section>
       </div>

@@ -3,7 +3,7 @@ import Icon from '@/components/common/Icon';
 import { useLang } from '@/context/LanguageContext';
 import { OPTION_LETTERS } from '@/i18n/calendar';
 import { translateName } from '@/i18n/translate';
-import { translateWithClaude } from '@/services/translateApi';
+import { translateWithAi } from '@/services/translateApi';
 import { todayKey } from '@/utils/date';
 import DateField from '@/components/common/DateField';
 
@@ -109,7 +109,7 @@ function toPayload(f) {
 
 /**
  * Add / edit a question (full-screen sheet) in Hindi, English and Gujarati.
- * The teacher types in one language and can ask Claude to translate into the other two,
+ * The teacher types in one language and can ask the AI (Gemini) to translate into the other two,
  * then review and correct each tab before saving.
  * @param initial  existing question to edit, or null to add a new one
  * @param onSave   async (payload) => void
@@ -152,7 +152,7 @@ export default function QuestionForm({ initial, onSave, onClose }) {
     setInfo('');
     setTranslating(true);
     try {
-      const out = await translateWithClaude({
+      const out = await translateWithAi({
         q: cur.q,
         opts: murli ? cur.opts : [],
         hint: murli ? cur.hint : '',
@@ -178,7 +178,7 @@ export default function QuestionForm({ initial, onSave, onClose }) {
     } catch (err) {
       setError([
         err.code === 'no_key'
-          ? 'अनुवाद सेवा अभी सेट नहीं है (Claude API key नहीं मिली)।'
+          ? 'अनुवाद सेवा अभी सेट नहीं है (Gemini API key नहीं मिली)।'
           : err.code === 'weekly_limit'
             ? 'इस सप्ताह की AI सीमा पूरी हो गई। सेटिंग्स में सीमा बढ़ाएँ या अगले सोमवार तक रुकें।'
           : err.code === 'offline'
@@ -259,7 +259,7 @@ export default function QuestionForm({ initial, onSave, onClose }) {
           </label>
         )}
 
-        {/* language tabs: type in one, translate into the others with Claude, then review */}
+        {/* language tabs: type in one, translate into the others with the AI, then review */}
         <div className="qf-langs">
           <div className="qf-langtabs" role="tablist" aria-label={t('भाषा')}>
             {LANGS.map(({ code, label }) => (
@@ -279,8 +279,8 @@ export default function QuestionForm({ initial, onSave, onClose }) {
           <button type="button" className="qf-ai" onClick={translate} disabled={disabled || !cur.q.trim()}>
             <Icon name="star" size={18} />
             {translating
-              ? t('Claude अनुवाद कर रहा है…')
-              : `${t('Claude से अनुवाद करें')} (${labelOf(f.active)} → ${LANGS.filter((l) => l.code !== f.active)
+              ? t('AI अनुवाद कर रहा है…')
+              : `${t('AI से अनुवाद करें')} (${labelOf(f.active)} → ${LANGS.filter((l) => l.code !== f.active)
                   .map((l) => l.label)
                   .join(', ')})`}
           </button>

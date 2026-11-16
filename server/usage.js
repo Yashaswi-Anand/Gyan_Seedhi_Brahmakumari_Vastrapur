@@ -1,19 +1,21 @@
-/* Weekly Claude usage and the teacher's weekly limit.
-   Anthropic doesn't let a normal API key read its own balance or spend limit, so the app
-   records the tokens of every Claude call it makes and estimates the cost itself.
+/* Weekly AI (Gemini) usage and the teacher's weekly limit.
+   An API key can't read its own bill, so the app records the tokens of every Gemini call it
+   makes and estimates the cost itself, at paid-tier prices. On Google's free tier the real
+   cost is zero; the estimate then shows what the same use would cost on the paid tier.
    Weeks run Monday–Sunday, India time. */
-import { ApiError } from './claude.js';
+import { ApiError } from './gemini.js';
 import { readBlob, readSettings, writeBlob } from './secrets.js';
 
 const USAGE = 'claude-usage';
 const KEEP_WEEKS = 12;
 export const WARN_AT = 0.8; // warn at 80% of the weekly limit
 
-/** USD per million tokens (Claude Opus 5.5). Cache writes: 1.25 × input. */
+/** USD per million tokens, paid tier (output includes thinking). Cached input ≈ 10% of input. */
 const PRICES = {
-  'claude-opus-5-5': { input: 4, output: 20, cacheRead: 0.2, cacheWrite: 5 },
+  'gemini-4-hydrogen': { input: 1.5, output: 7.5, cacheRead: 0.15, cacheWrite: 0 },
+  'gemini-3.5-flash-lite': { input: 0.3, output: 2.5, cacheRead: 0.03, cacheWrite: 0 },
 };
-const DEFAULT_PRICE = PRICES['claude-opus-5-5'];
+const DEFAULT_PRICE = PRICES['gemini-4-hydrogen'];
 
 /** Monday (YYYY-MM-DD) of the current week in India time. */
 export function weekStart(now = new Date()) {
@@ -37,7 +39,7 @@ export function costOf(model, usage = {}) {
   );
 }
 
-/** Adds one Claude response to this week's totals. Never fails the request. */
+/** Adds one AI response to this week's totals. Never fails the request. */
 export async function recordUsage(model, usage, opts) {
   try {
     const data = await readBlob(USAGE, opts);
@@ -75,7 +77,7 @@ export async function budgetStatus(opts) {
   };
 }
 
-/** Stops a Claude call when this week's limit is used up. Returns the current status. */
+/** Stops an AI call when this week's limit is used up. Returns the current status. */
 export async function assertWithinBudget(opts) {
   let b;
   try {

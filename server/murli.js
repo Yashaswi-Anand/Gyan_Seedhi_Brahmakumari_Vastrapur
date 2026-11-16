@@ -29,7 +29,7 @@ function decode(s) {
 /** Murli HTML → readable text with section labels. */
 export function murliHtmlToText(html) {
   let s = html.replace(/<(script|style|noscript)[\s\S]*?<\/\1>/gi, '');
-  // mark the labelled sections so Claude knows which part is which
+  // mark the labelled sections so the AI knows which part is which
   for (const [cls, label] of Object.entries(LABELS)) {
     s = s.replace(new RegExp(`(<[^>]+class="[^"]*\\b${cls}\\b[^"]*"[^>]*>)`, 'g'), `\n${label}\n$1`);
   }

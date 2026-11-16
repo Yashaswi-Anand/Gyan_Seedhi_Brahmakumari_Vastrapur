@@ -1,7 +1,7 @@
-/* Translate one quiz question into Hindi, English and Gujarati with Claude.
+/* Translate one quiz question into Hindi, English and Gujarati with Gemini.
    Runs on the server only (Netlify Function, or the Vite dev server locally), so the
    API key never reaches the browser. Used by netlify/functions/translate.mjs and vite.config.js. */
-import { ApiError, BK_LANGUAGE_RULES, FALLBACK, MODEL, errorBody, makeClient, mapClaudeError } from './claude.js';
+import { ApiError, BK_LANGUAGE_RULES, errorBody, generateContent, modelName, partsOf, stopReason, usageOf } from './gemini.js';
 import { readJson, streamJsonResult } from './http.js';
 import { assertWithinBudget, recordUsage } from './usage.js';
 
@@ -56,37 +56,43 @@ export function cleanInput(body) {
   return input;
 }
 
-/** Calls Claude and returns { hi, en, gu }, each { q, opts, hint, exp, title }. */
+/** Calls Gemini and returns { hi, en, gu }, each { q, opts, hint, exp, title }. */
 export async function translateQuestion(body, { apiKey, dev = false } = {}) {
   const input = cleanInput(body);
-  const client = makeClient(apiKey);
+  if (!apiKey) throw new ApiError(500, 'no_key', 'The Gemini service is not set up.');
   await assertWithinBudget({ dev }); // the teacher's weekly limit
 
-  let response;
-  try {
-    response = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 8000,
-      ...FALLBACK, // if a safety check declines, the API retries on a suitable model in the same call
-      system: SYSTEM,
-      output_config: {
-        effort: 'medium',
-        format: { type: 'json_schema', schema: OUTPUT_SCHEMA },
+  const model = modelName();
+  const data = await generateContent(
+    apiKey,
+    {
+      systemInstruction: { parts: [{ text: SYSTEM }] },
+      contents: [{ role: 'user', parts: [{ text: JSON.stringify(input) }] }],
+      generationConfig: {
+        maxOutputTokens: 8000,
+        responseMimeType: 'application/json',
+        responseJsonSchema: OUTPUT_SCHEMA,
+        thinkingConfig: { thinkingLevel: 'LOW' },
       },
-      messages: [{ role: 'user', content: JSON.stringify(input) }],
-    });
-  } catch (err) {
-    throw mapClaudeError(err);
-  }
-  await recordUsage(MODEL, response.usage, { dev });
+    },
+    { model },
+  );
+  await recordUsage(model, usageOf(data), { dev });
 
-  if (response.stop_reason === 'refusal') throw new ApiError(422, 'refusal', 'This text could not be translated.');
-  if (response.stop_reason === 'max_tokens') {
+  const parts = partsOf(data);
+  const reason = stopReason(data, parts);
+  if (reason === 'refusal') throw new ApiError(422, 'refusal', 'This text could not be translated.');
+  if (reason === 'max_tokens') {
     throw new ApiError(502, 'truncated', 'The translation was cut off. Please shorten the text.');
   }
   let out;
   try {
-    out = JSON.parse(response.content.find((b) => b.type === 'text')?.text);
+    out = JSON.parse(
+      parts
+        .filter((p) => !p.thought && typeof p.text === 'string')
+        .map((p) => p.text)
+        .join(''),
+    );
   } catch {
     throw new ApiError(502, 'bad_output', 'The translation came back in an unexpected format.');
   }

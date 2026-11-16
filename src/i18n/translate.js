@@ -29,7 +29,7 @@ export function translate(lang, text) {
 
 /* ---------- question translations from Firestore ----------
    Questions the teacher adds carry their own translations (`i18n.hi / en / gu`, made with
-   Claude and reviewed by the teacher). When questions load, each source text is registered
+   the AI and reviewed by the teacher). When questions load, each source text is registered
    here against its translations, so every screen that shows question text finds it. */
 const contentMaps = { hi: new Map(), en: new Map(), gu: new Map() };
 

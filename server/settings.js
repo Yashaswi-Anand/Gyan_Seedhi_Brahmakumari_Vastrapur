@@ -1,8 +1,8 @@
-/* POST /api/settings – the Claude API key used by the AI features, and the weekly limit.
+/* POST /api/settings – the Gemini API key used by the AI features, and the weekly limit.
    The key is stored on the server only; the app only ever sees its last 4 characters.
    Changing it needs the settings PIN (created the first time a key is saved), checked here
    on the server, with a lock-out after repeated wrong PINs. */
-import Anthropic from '@anthropic-ai/sdk';
+import { verifyKey } from './gemini.js';
 import { json, readJson } from './http.js';
 import { hashPin, pinMatches, readSettings, writeSettings } from './secrets.js';
 import { budgetStatus } from './usage.js';
@@ -14,11 +14,11 @@ const PIN_RE = /^\d{4,8}$/;
 const last4 = (k) => (k ? k.slice(-4) : '');
 
 function status(s, envKey) {
-  const source = s.apiKey ? 'app' : envKey ? 'netlify' : null;
+  const source = s.geminiKey ? 'app' : envKey ? 'netlify' : null;
   return {
     configured: !!source,
     source,
-    last4: last4(s.apiKey || envKey),
+    last4: last4(s.geminiKey || envKey),
     pinSet: !!s.pinHash,
     updatedAt: s.updatedAt || null,
   };
@@ -30,19 +30,6 @@ function parseLimit(v) {
   const n = Math.round(Number(v) * 100) / 100;
   if (!Number.isFinite(n) || n < 0.5 || n > 1000) return { error: 'bad_limit' };
   return { limit: n };
-}
-
-/** Checks the key with a free Anthropic call (lists one model). */
-async function verifyKey(key) {
-  try {
-    await new Anthropic({ apiKey: key }).models.list({ limit: 1 });
-    return null;
-  } catch (err) {
-    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
-      return 'invalid_key';
-    }
-    return 'check_failed';
-  }
 }
 
 /** Verifies the PIN with lock-out. Returns an error Response, or null when the PIN is right. */
@@ -80,7 +67,7 @@ export async function handleSettingsRequest(request, { dev = false, envKey = '' 
 
     case 'set_key': {
       const key = String(body.key || '').trim();
-      if (!/^sk-ant-[A-Za-z0-9_-]{20,}$/.test(key)) return json(400, { error: 'bad_key_format' });
+      if (!/^[A-Za-z0-9._-]{30,200}$/.test(key)) return json(400, { error: 'bad_key_format' });
       if (s.pinHash) {
         const denied = await checkPin(s, body.pin, opts);
         if (denied) return denied;
@@ -89,7 +76,7 @@ export async function handleSettingsRequest(request, { dev = false, envKey = '' 
       }
       const problem = await verifyKey(key);
       if (problem) return json(400, { error: problem });
-      const next = { ...(await readSettings(opts)), apiKey: key, updatedAt: new Date().toISOString(), fails: 0, lockedUntil: null };
+      const next = { ...(await readSettings(opts)), geminiKey: key, updatedAt: new Date().toISOString(), fails: 0, lockedUntil: null };
       if (!s.pinHash || PIN_RE.test(String(body.newPin || ''))) {
         const { salt, hash } = hashPin(body.newPin);
         next.pinSalt = salt;
@@ -114,7 +101,7 @@ export async function handleSettingsRequest(request, { dev = false, envKey = '' 
       if (!s.pinHash) return json(400, { error: 'no_pin' });
       const denied = await checkPin(s, body.pin, opts);
       if (denied) return denied;
-      const { apiKey: _removed, ...rest } = await readSettings(opts);
+      const { geminiKey: _removed, ...rest } = await readSettings(opts);
       const next = { ...rest, updatedAt: new Date().toISOString() };
       await writeSettings(next, opts);
       return reply(next);

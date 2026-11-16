@@ -1,4 +1,4 @@
-/* Calls our own server endpoints (/api/*), which talk to Claude. The Claude API key stays on
+/* Calls our own server endpoints (/api/*), which talk to Gemini. The API key stays on
    the server. Long calls stream a JSON body; errors come back as { error, message }. */
 
 export async function postJson(path, payload) {
@@ -34,7 +34,7 @@ export async function postJson(path, payload) {
 export function serverErrorMessage(err) {
   switch (err?.code) {
     case 'no_key':
-      return 'Claude सेवा अभी सेट नहीं है (Claude API key नहीं मिली)।';
+      return 'AI सेवा अभी सेट नहीं है (Gemini API key नहीं मिली)।';
     case 'offline':
       return 'इंटरनेट नहीं है। फिर से कोशिश करें।';
     case 'weekly_limit':

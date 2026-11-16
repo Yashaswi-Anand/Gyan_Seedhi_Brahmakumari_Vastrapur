@@ -92,7 +92,7 @@ function QuestionItem({ q, n, onEdit, onDelete }) {
   );
 }
 
-/** Teacher only: Q/A chat with Claude, plus every question date-wise with add / edit / delete. */
+/** Teacher only: Q/A chat with Gemini, plus every question date-wise with add / edit / delete. */
 export default function QuestionsAdminPage() {
   const { t, cal, tq } = useLang();
   const { reload } = useQuestions();
