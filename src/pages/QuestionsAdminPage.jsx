@@ -141,6 +141,15 @@ export default function QuestionsAdminPage() {
   // nearest dates (before / after the chosen one) that have questions, for the ‹ › buttons
   const prevDate = groups.find((g) => g.date < day)?.date;
   const nextDate = [...groups].reverse().find((g) => g.date > day)?.date;
+  // the first date after today that already has questions (e.g. tomorrow's), offered from today and earlier
+  const upcoming = [...groups].reverse().find((g) => g.date > today)?.date;
+  // chart questions are the same every day: a date without its own shows the ones students get that day
+  const reusedChart = useMemo(() => {
+    const own = shown[0]?.questions || [];
+    if (own.some((q) => q.category === 'chart')) return null;
+    const src = groups.find((g) => g.date < day && g.questions.some((q) => q.category === 'chart' && q.published !== false));
+    return src ? { date: src.date, questions: src.questions.filter((q) => q.category === 'chart' && q.published !== false) } : null;
+  }, [groups, shown, day]);
 
   const save = async (form) => {
     if (editing?.id) await updateQuestion(editing.id, form, editing);
@@ -234,6 +243,16 @@ export default function QuestionsAdminPage() {
           </div>
         )}
 
+        {upcoming && day <= today && (
+          <button className="qa-upcoming" onClick={() => setDay(upcoming)}>
+            <span>
+              {cal.days[parseDateKey(upcoming).getDay()]}, {formatDateKey(upcoming, cal)}
+              <small>{t('के प्रश्न भी तैयार हैं — देखने के लिए छुएँ')}</small>
+            </span>
+            <Icon name="back" size={20} />
+          </button>
+        )}
+
         {list && list.length > 0 && !shown.length && (
           <p className="note">
             {formatDateKey(day, cal)} — {t('इस तारीख के लिए कोई प्रश्न नहीं है।')}
@@ -243,6 +262,7 @@ export default function QuestionsAdminPage() {
         {shown.map((g) => {
           const d = parseDateKey(g.date);
           const murliN = g.questions.filter((q) => q.category === 'murli').length;
+          const chartN = g.questions.length - murliN + (reusedChart?.questions.length || 0);
           return (
             <section key={g.date} className="qa-day">
               <h3 className="monthhead">
@@ -251,13 +271,23 @@ export default function QuestionsAdminPage() {
                   {g.date === today && <span className="chip today qa-today">{t('आज')}</span>}
                 </span>
                 <small>
-                  {t('मुरली')} {murliN} · {t('चार्ट')} {g.questions.length - murliN}
+                  {t('मुरली')} {murliN} · {t('चार्ट')} {chartN}
                 </small>
               </h3>
               <div className="stack" style={{ gap: 12 }}>
                 {g.questions.map((q, i) => (
                   <QuestionItem key={q.id} q={q} n={i + 1} onEdit={setEditing} onDelete={setDeleting} />
                 ))}
+                {reusedChart && (
+                  <>
+                    <p className="note qa-reused">
+                      {t('चार्ट प्रश्न हर दिन वही रहते हैं। ये प्रश्न इस तारीख से लिए गए हैं:')} {formatDateKey(reusedChart.date, cal)}
+                    </p>
+                    {reusedChart.questions.map((q, i) => (
+                      <QuestionItem key={q.id} q={q} n={g.questions.length + i + 1} onEdit={setEditing} onDelete={setDeleting} />
+                    ))}
+                  </>
+                )}
               </div>
             </section>
           );

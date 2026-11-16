@@ -1053,3 +1053,33 @@
   line-height: 1.1;
   color: var(--ink);
 }
+
+/* question list: link to the next date that already has questions (e.g. tomorrow) */
+.qa-upcoming {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--gold);
+  background: var(--gold-soft);
+  color: #6b4a10;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.qa-upcoming small {
+  display: block;
+  font-weight: 500;
+  font-size: 13px;
+}
+.qa-upcoming svg {
+  flex: none;
+  transform: scaleX(-1);
+}
+.qa-reused {
+  margin: 4px 0 -2px;
+}
