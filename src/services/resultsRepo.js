@@ -1,7 +1,7 @@
 /* Student results in Firestore, so the teacher can see everyone's scores.
    Collection `results`, one document per student per day, id `${mobile}_${date}`.
    The security rules allow creating a day's result once; it can't be changed after. */
-import { collection, doc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDocs, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { db } from './firebase';
 import { addDays, dateKey, todayKey } from '@/utils/date';
 import { storage } from './storage';
@@ -49,6 +49,34 @@ async function uploadPlay(user, play) {
     if (e?.code === 'permission-denied') return 'exists';
     throw e;
   }
+}
+
+/* ---------- an existing student on a new phone ---------- */
+
+/** Every saved day of one student, oldest first. */
+export async function fetchStudentResults(mobile) {
+  const snap = await getDocs(query(col, where('mobile', '==', mobile)));
+  return snap.docs.map((d) => d.data()).sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+/** Firestore result → the play record kept on the phone. */
+export const resultToPlay = (r) => ({
+  date: r.date,
+  points: int(r.points),
+  mPts: int(r.mPts ?? r.points),
+  cPts: int(r.cPts),
+  mMax: int(r.mMax, 100),
+  cMax: int(r.cMax, 100),
+  first: int(r.first),
+  total: int(r.total),
+  acc: int(r.acc),
+  timeSec: int(r.timeSec),
+  jodi: false,
+});
+
+/** Days that came from Firestore are already there: don't upload them again. */
+export function markAllSynced(mobile, dates) {
+  dates.forEach((d) => markSynced(mobile, d));
 }
 
 /** Upload every local play that hasn't reached Firestore yet. Safe to call often. */

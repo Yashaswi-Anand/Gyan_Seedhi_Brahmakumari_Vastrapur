@@ -2,25 +2,28 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LanguageSwitch from '@/components/common/LanguageSwitch';
 import Logo from '@/components/common/Logo';
-import { CENTRE_NAME } from '@/constants/config';
+import { CENTRE_NAME, isTeacherMobile } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
+import { fetchStudentResults } from '@/services/resultsRepo';
 
 const MOBILE_RE = /^[6-9]\d{9}$/;
 
-/** Two steps: mobile number, then (for a new number) the person's name. */
+/** Two steps: mobile number, then (only for a number never used before) the person's name. */
 export default function LoginPage() {
-  const { db, login, register, openDemo } = useApp();
+  const { db, login, register, restore, openDemo } = useApp();
   const { t } = useLang();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [mobile, setMobile] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const goHome = () => navigate('/', { replace: true });
 
-  const next = () => {
+  const next = async () => {
+    if (busy) return;
     const v = mobile.replace(/\D/g, '');
     if (!MOBILE_RE.test(v)) {
       setError('कृपया 10 अंकों का सही मोबाइल नंबर लिखें।');
@@ -31,6 +34,22 @@ export default function LoginPage() {
       login(v);
       goHome();
       return;
+    }
+    // number already used on another phone: open the same account with its saved results
+    if (!isTeacherMobile(v)) {
+      setBusy(true);
+      try {
+        const results = await fetchStudentResults(v);
+        if (results.length) {
+          restore(v, results);
+          goHome();
+          return;
+        }
+      } catch {
+        // offline: continue as new; saved days are added once the phone is back online
+      } finally {
+        setBusy(false);
+      }
     }
     setStep(2);
   };
@@ -76,8 +95,8 @@ export default function LoginPage() {
             autoFocus
           />
           <p className="err">{t(error)}</p>
-          <button className="btn" onClick={next}>
-            {t('आगे बढ़ें')}
+          <button className="btn" onClick={next} disabled={busy}>
+            {t(busy ? 'जाँच हो रही है…' : 'आगे बढ़ें')}
           </button>
         </div>
       ) : (

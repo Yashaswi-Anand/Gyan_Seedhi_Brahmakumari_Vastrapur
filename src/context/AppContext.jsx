@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppContext } from './contextObjects';
 import { DEMO_ACCOUNT, isTeacherMobile } from '@/constants/config';
 import { pruneAllAnswers, pruneAnswers } from '@/services/answers';
-import { syncPlays } from '@/services/resultsRepo';
+import { fetchStudentResults, markAllSynced, resultToPlay, syncPlays } from '@/services/resultsRepo';
 import {
   createUserRecord,
   loadSession,
@@ -46,6 +46,29 @@ export function AppProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey, isTeacher]);
 
+  // Days saved from another phone (same number) are added to this phone's history, once per app open.
+  const merged = useRef(new Set());
+  useEffect(() => {
+    if (!user || isTeacher || user.mobile === DEMO_ACCOUNT.mobile || merged.current.has(user.mobile)) return;
+    const mobile = user.mobile;
+    merged.current.add(mobile);
+    fetchStudentResults(mobile)
+      .then((results) => {
+        if (!results.length) return;
+        markAllSynced(mobile, results.map((r) => r.date));
+        setDb((prev) => {
+          const u = prev[mobile];
+          if (!u) return prev;
+          const have = new Set(u.plays.map((p) => p.date));
+          const extra = results.filter((r) => !have.has(r.date)).map(resultToPlay);
+          if (!extra.length) return prev;
+          const plays = [...u.plays, ...extra].sort((a, b) => (a.date < b.date ? -1 : 1));
+          return { ...prev, [mobile]: { ...u, plays } };
+        });
+      })
+      .catch(() => merged.current.delete(mobile)); // offline: try again next time
+  }, [user, isTeacher]);
+
   const updateUser = useCallback(
     (fn) => {
       setDb((prev) => {
@@ -62,6 +85,19 @@ export function AppProvider({ children }) {
   const logout = useCallback(() => {
     setSession(null);
     setLastQuiz(null);
+  }, []);
+
+  /** A number already saved in Firestore: bring back its name and every saved day on this phone. */
+  const restore = useCallback((mobile, results) => {
+    const latest = results[results.length - 1];
+    markAllSynced(mobile, results.map((r) => r.date));
+    setDb((prev) => {
+      const u = createUserRecord(mobile, latest.name, '');
+      u.plays = results.map(resultToPlay);
+      u.created = results[0].date;
+      return { ...prev, [mobile]: u };
+    });
+    setSession(mobile);
   }, []);
 
   const register = useCallback((mobile, name, role) => {
@@ -101,8 +137,8 @@ export function AppProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ db, user, isTeacher, login, logout, register, openDemo, addPlay, recordSpin, lastQuiz, setLastQuiz }),
-    [db, user, isTeacher, login, logout, register, openDemo, addPlay, recordSpin, lastQuiz],
+    () => ({ db, user, isTeacher, login, logout, register, restore, openDemo, addPlay, recordSpin, lastQuiz, setLastQuiz }),
+    [db, user, isTeacher, login, logout, register, restore, openDemo, addPlay, recordSpin, lastQuiz],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
