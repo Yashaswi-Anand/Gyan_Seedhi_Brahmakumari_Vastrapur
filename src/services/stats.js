@@ -4,7 +4,13 @@ import { BADGES } from '@/data/badges';
 import { addDays, dateKey, parseDateKey, todayKey } from '@/utils/date';
 import { sum } from '@/utils/helpers';
 
-export const hasPlayedToday = (u) => u.plays.some((p) => p.date === todayKey());
+/** Monday of the week a date key falls in (weeks run Monday to Sunday). */
+export function weekStart(key) {
+  const d = parseDateKey(key);
+  return dateKey(addDays(d, -((d.getDay() + 6) % 7)));
+}
+
+export const hasPlayedToday =(u) => u.plays.some((p) => p.date === todayKey());
 
 export const todaysPlay = (u) => u.plays.find((p) => p.date === todayKey()) || null;
 
@@ -69,16 +75,37 @@ export function levelInfo(pts) {
   return { n: i + 1, next, pct: next ? Math.round(((pts - LEVELS[i]) / (next - LEVELS[i])) * 100) : 100 };
 }
 
-/* ---------- growth tree: one leaf per day of practice ---------- */
+/* ---------- this month: scores start from zero on the 1st of every month ---------- */
 
-export function leafCount(u) {
-  const d = {};
-  u.plays.forEach((p) => (d[p.date] = 1));
-  return Object.keys(d).length;
+/** Number of days in the month of a date key (28 to 31). */
+export function daysInMonth(key = todayKey()) {
+  const [y, m] = key.split('-');
+  return new Date(+y, +m, 0).getDate();
 }
 
-export const treeStage = (n) =>
-  n < 1 ? 'बीज' : n <= 6 ? 'अंकुर' : n <= 13 ? 'पौधा' : n <= 27 ? 'वृक्ष' : 'फलदार वृक्ष';
+/** Plays of the current calendar month. */
+export const monthPlays = (u) => {
+  const mo = todayKey().slice(0, 7);
+  return u.plays.filter((p) => p.date.slice(0, 7) === mo);
+};
+export const monthPts = (u) => sum(monthPlays(u), (x) => x.points);
+export const monthMurli = (u) => sum(monthPlays(u), murliPts);
+export const monthChart = (u) => sum(monthPlays(u), chartPts);
+
+/* ---------- growth tree: one leaf per day of the month, lit for each day practised ---------- */
+
+/** Days practised this month (the tree starts again every month). */
+export function leafCount(u) {
+  return new Set(monthPlays(u).map((p) => p.date)).size;
+}
+
+/** Stage of a tree with n of total leaves (total = days in the month). */
+export function treeStage(n, total = daysInMonth()) {
+  if (n < 1) return 'बीज';
+  if (n >= total) return 'फलदार वृक्ष';
+  const f = n / total;
+  return f <= 0.25 ? 'अंकुर' : f <= 0.5 ? 'पौधा' : 'वृक्ष';
+}
 
 /* ---------- day-by-day results ---------- */
 
@@ -87,11 +114,11 @@ export const playsNewestFirst = (u) => u.plays.slice().sort((a, b) => (a.date < 
 
 /**
  * Keep plays inside a period.
- * week = the last 7 days including today, month = the current calendar month, all = everything.
+ * week = this week from Monday, month = the current calendar month, all = everything.
  */
 export function playsInScope(plays, scope) {
   if (scope === 'week') {
-    const from = dateKey(addDays(new Date(), -6));
+    const from = weekStart(todayKey());
     return plays.filter((p) => p.date >= from);
   }
   if (scope === 'month') {

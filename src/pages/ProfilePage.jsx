@@ -6,28 +6,33 @@ import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
 import { BADGES } from '@/data/badges';
 import {
+  daysInMonth,
   earnedBadgeIds,
   leafCount,
   levelInfo,
+  monthChart,
+  monthMurli,
+  monthPlays,
+  monthPts,
   streaks,
-  totalChart,
-  totalMurli,
-  totalPts,
   treeStage,
 } from '@/services/stats';
 import { sum } from '@/utils/helpers';
 
 export default function ProfilePage() {
   const { user, logout } = useApp();
-  const { t, tn } = useLang();
+  const { t, tn, cal } = useLang();
   const navigate = useNavigate();
 
-  const pts = totalPts(user);
+  // points, level and accuracy count from the 1st of this month; badges and streaks are for all time
+  const pts = monthPts(user);
   const lv = levelInfo(pts);
   const st = streaks(user.plays);
   const have = earnedBadgeIds(user);
   const leaves = leafCount(user);
-  const avg = user.plays.length ? Math.round(sum(user.plays, (p) => p.acc) / user.plays.length) : 0;
+  const total = daysInMonth();
+  const mp = monthPlays(user);
+  const avg = mp.length ? Math.round(sum(mp, (p) => p.acc) / mp.length) : 0;
   const maskedMobile = user.mobile.slice(0, 2) + '••••••' + user.mobile.slice(-2);
   const displayName = tn(user.name);
 
@@ -47,14 +52,18 @@ export default function ProfilePage() {
 
         <div className="card treecard">
           <div className="treebox sm">
-            <GrowthTree leaves={leaves} />
+            <GrowthTree leaves={leaves} total={total} />
           </div>
           <div>
             <b style={{ fontSize: 19 }}>{t('मेरा वृक्ष')}</b>
-            <p className="muted small">{t(`${treeStage(leaves)} · ${leaves} पत्ते`)}</p>
-            <p className="tiny">{t('हर दिन के अभ्यास पर एक नया पत्ता')}</p>
+            <p className="muted small">{t(`${treeStage(leaves, total)} · ${leaves} / ${total} पत्ते`)}</p>
+            <p className="tiny">{t('महीने के हर दिन का एक पत्ता; हर महीने नया वृक्ष')}</p>
           </div>
         </div>
+
+        <p className="muted small" style={{ margin: '0 0 -10px' }}>
+          {cal.months[new Date().getMonth()]} · {t('हर महीने की 1 तारीख से अंक शून्य से शुरू होते हैं।')}
+        </p>
 
         <div className="card stack" style={{ gap: 10 }}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -70,9 +79,9 @@ export default function ProfilePage() {
 
         <div className="tiles" style={{ margin: 0, gridTemplateColumns: 'repeat(2,1fr)' }}>
           {[
-            [totalMurli(user), 'मुरली अंक'],
-            [totalChart(user), 'चार्ट अंक'],
-            [pts, 'कुल अंक'],
+            [monthMurli(user), 'मुरली अंक'],
+            [monthChart(user), 'चार्ट अंक'],
+            [pts, 'इस महीने के अंक'],
             [`${avg}%`, 'औसत सटीकता'],
             [st.cur, 'अभी की लड़ी (दिन)'],
             [st.best, 'सबसे लम्बी लड़ी'],

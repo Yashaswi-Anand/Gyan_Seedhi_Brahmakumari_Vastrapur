@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLang } from '@/context/LanguageContext';
 import { rangeFor, rankStudents, watchResults } from '@/services/resultsRepo';
 import Podium from './Podium';
+import WinnersHistory from './WinnersHistory';
 
+// scores start from zero every month, so there is no all-time ranking; past winners are kept instead
 const SCOPES = [
   ['week', 'इस सप्ताह'],
   ['month', 'इस महीने'],
-  ['all', 'कुल'],
+  ['winners', 'विजेता इतिहास'],
 ];
-
 
 /** Teacher view: every student's murli, chart and total marks, ranked; updates live. */
 export default function Leaderboard() {
@@ -18,6 +19,7 @@ export default function Leaderboard() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (scope === 'winners') return undefined;
     setResults(null);
     const [from, to] = rangeFor(scope);
     return watchResults(
@@ -43,6 +45,15 @@ export default function Leaderboard() {
         ))}
       </div>
 
+      {scope === 'winners' ? <WinnersHistory /> : <Ranking results={results} error={error} rows={rows} />}
+    </div>
+  );
+}
+
+function Ranking({ results, error, rows }) {
+  const { t } = useLang();
+  return (
+    <>
       {error && <p className="msg">{t('परिणाम लोड नहीं हो पाए। इंटरनेट जाँचें।')}</p>}
       {!results && !error && <p className="note">{t('परिणाम लोड हो रहे हैं…')}</p>}
       {results && !rows.length && <p className="note">{t('इस अवधि में किसी विद्यार्थी का परिणाम नहीं है।')}</p>}
@@ -72,6 +83,6 @@ export default function Leaderboard() {
           ))}
         </section>
       )}
-    </div>
+    </>
   );
 }

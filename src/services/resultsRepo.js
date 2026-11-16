@@ -3,7 +3,8 @@
    The security rules allow creating a day's result once; it can't be changed after. */
 import { collection, doc, getDocs, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { db } from './firebase';
-import { addDays, dateKey, todayKey } from '@/utils/date';
+import { addDays, dateKey, parseDateKey, todayKey } from '@/utils/date';
+import { weekStart } from './stats';
 import { storage } from './storage';
 
 const col = collection(db, 'results');
@@ -122,10 +123,45 @@ export function rankStudents(results) {
   return rows;
 }
 
-/** [from, to] date keys: week = last 7 days incl. today, month = this calendar month, all = everything. */
+/**
+ * Top 3 of every finished week (Monday–Sunday) and month, newest first:
+ * { weeks: [{ key, from, to, students, top }], months: [{ key, students, top }] }.
+ * The running week and month are left out (they show on the इस सप्ताह / इस महीने tabs).
+ */
+export function winnersHistory(results, today = todayKey(), limit = 12) {
+  const thisWeek = weekStart(today);
+  const thisMonth = today.slice(0, 7);
+  const weeks = new Map();
+  const months = new Map();
+  for (const r of results) {
+    if (!r?.date) continue;
+    const w = weekStart(r.date);
+    const m = r.date.slice(0, 7);
+    if (w < thisWeek) weeks.set(w, [...(weeks.get(w) || []), r]);
+    if (m < thisMonth) months.set(m, [...(months.get(m) || []), r]);
+  }
+  const top = (rs) => {
+    const rows = rankStudents(rs);
+    return { students: rows.length, top: rows.filter((x) => x.rank <= 3) };
+  };
+  return {
+    weeks: [...weeks.keys()]
+      .sort()
+      .reverse()
+      .slice(0, limit)
+      .map((key) => ({ key, from: key, to: dateKey(addDays(parseDateKey(key), 6)), ...top(weeks.get(key)) })),
+    months: [...months.keys()]
+      .sort()
+      .reverse()
+      .slice(0, limit)
+      .map((key) => ({ key, ...top(months.get(key)) })),
+  };
+}
+
+/** [from, to] date keys: week = this week from Monday, month = this calendar month, all = everything. */
 export function rangeFor(scope) {
   const today = todayKey();
-  if (scope === 'week') return [dateKey(addDays(new Date(), -6)), today];
+  if (scope === 'week') return [weekStart(today), today];
   if (scope === 'month') return [`${today.slice(0, 7)}-01`, `${today.slice(0, 7)}-31`];
   return ['0000-01-01', '9999-12-31'];
 }

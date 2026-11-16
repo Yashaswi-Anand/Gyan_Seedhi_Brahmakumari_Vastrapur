@@ -529,5 +529,14 @@
   " प्रश्न प्रकाशित हुए, बाकी नहीं हो पाए। इंटरनेट जाँचकर फिर से कोशिश करें।": " questions were published; the rest couldn't be. Check the internet and try again.",
   " प्रश्न प्रकाशित हो गए।": " questions published.",
   "तारीख चुनना ज़रूरी है।": "Choosing a date is required.",
-  "मुरली की तारीख नहीं दी गई": "Murli date not given"
+  "मुरली की तारीख नहीं दी गई": "Murli date not given",
+  "विजेता इतिहास": "Winners",
+  "विद्यार्थी: ": "Students: ",
+  "साप्ताहिक": "Weekly",
+  "मासिक": "Monthly",
+  "अभी कोई सप्ताह पूरा नहीं हुआ। सप्ताह सोमवार से रविवार तक गिना जाता है।": "No week has finished yet. A week runs from Monday to Sunday.",
+  "अभी कोई महीना पूरा नहीं हुआ।": "No month has finished yet.",
+  "इस महीने के अंक": "This month's points",
+  "महीने के हर दिन का एक पत्ता; हर महीने नया वृक्ष": "One leaf for each day of the month; a new tree every month",
+  "हर महीने की 1 तारीख से अंक शून्य से शुरू होते हैं।": "Points start again from zero on the 1st of every month."
 }

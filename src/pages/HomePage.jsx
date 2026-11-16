@@ -19,12 +19,12 @@ import {
   chartPts,
   hasPlayedToday,
   leafCount,
+  monthChart,
+  monthMurli,
+  monthPts,
   murliPts,
   streaks,
   todaysPlay,
-  totalChart,
-  totalMurli,
-  totalPts,
 } from '@/services/stats';
 import { formatDateKey, formatLong, todayKey } from '@/utils/date';
 
@@ -180,14 +180,14 @@ export default function HomePage() {
         </button>
       )}
 
-      {/* total points and the practice calendar are for students only */}
+      {/* this month's points (zero again on the 1st) and the practice calendar are for students only */}
       {!isTeacher && (
         <div className="ptcard">
           <div className="pth">
-            <span className="muted">{t('कुल अंक')}</span>
-            <b>{totalPts(user)}</b>
+            <span className="muted">{t('इस महीने के अंक')}</span>
+            <b>{monthPts(user)}</b>
           </div>
-          <PointsSplit murli={totalMurli(user)} chart={totalChart(user)} />
+          <PointsSplit murli={monthMurli(user)} chart={monthChart(user)} />
         </div>
       )}
 

@@ -973,3 +973,83 @@
   opacity: 0;
   cursor: pointer;
 }
+
+/* ---------- winners history: top 3 of every finished week and month ---------- */
+.win-period {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.win-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--red-soft);
+  color: var(--red-deep);
+  font-size: 15.5px;
+}
+.win-head small {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.win-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+}
+.win-medal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.win-medal b {
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.win-row.p1 .win-medal {
+  color: #a8791c;
+}
+.win-row.p2 .win-medal {
+  color: #66717f;
+}
+.win-row.p3 .win-medal {
+  color: #9a5a2c;
+}
+.win-row.p1 {
+  background: #fffaf0;
+}
+.win-name {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+.win-name small {
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.win-total {
+  text-align: right;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.win-total b {
+  display: block;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--ink);
+}

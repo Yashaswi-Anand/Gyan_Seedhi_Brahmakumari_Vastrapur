@@ -9,7 +9,7 @@ import WheelBlock from '@/components/wheel/WheelBlock';
 import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
-import { leafCount, treeStage } from '@/services/stats';
+import { daysInMonth, leafCount, treeStage } from '@/services/stats';
 import { formatTime } from '@/utils/date';
 import { prefersReducedMotion } from '@/utils/helpers';
 
@@ -79,7 +79,7 @@ export default function ResultPage() {
             </div>
             <div>
               <b style={{ fontSize: 19 }}>{t('वृक्ष पर नया पत्ता जुड़ा')}</b>
-              <p className="muted small">{t(`${treeStage(leaves)} · ${leaves} पत्ते`)}</p>
+              <p className="muted small">{t(`${treeStage(leaves)} · ${leaves} / ${daysInMonth()} पत्ते`)}</p>
             </div>
           </div>
         )}
