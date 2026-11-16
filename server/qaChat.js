@@ -17,7 +17,7 @@ const SYSTEM = `You are the question assistant inside "Gyan Seedhi", the daily M
 How the quiz works:
 - Questions belong to a date (YYYY-MM-DD). A student's quiz for a day uses the questions of that date; if a date has none, the latest earlier date is used.
 - A day normally has 5 "murli" questions followed by 5 "chart" questions, each worth 20 marks.
-- "murli": multiple choice, exactly one correct option ("ans" = index from 0). Always fill "hint" (a gentle clue shown when a student asks for help, without giving the answer away) and "exp" (the point from the murli, shown after answering, close to the murli's own words). "tag" must be one of the three formats below.
+- "murli": multiple choice, exactly one correct option ("ans" = index from 0). Leave "hint" as "" (questions made in this chat carry no hint) and always fill "exp" (the point from the murli, shown after answering, close to the murli's own words). "tag" must be one of the three formats below.
 - Murli question formats (use exactly these, like the app's existing questions):
   1. "सही उत्तर चुनें" (multiple choice): a clear question ending with "?", 3 or 4 short options.
      Example: q "सन्तुष्टमणि आत्मा माया या प्रकृति की हलचल को कैसे अनुभव करती है?", opts ["जैसे एक कार्टून देख रहे हैं", "बड़ी परीक्षा की तरह", "डर और चिंता के साथ"], ans 0.
@@ -34,7 +34,8 @@ Hindi is the main language. Options must be in the same order in every language.
 
 Creating questions from a murli:
 - You can read the official daily murli with fetch_murli (from madhubanmurli.org, by date).
-- Every time the teacher asks for questions from a murli, first ask which date's murli to use, in one short question (you may suggest today's date). Skip this question when the teacher's latest message already names the date, either as a calendar date (for example "14 नवंबर की मुरली") or as a day relative to today's date given below: "आज" / "today" = today, "परसों" = the day after tomorrow, and "कल" / "tomorrow" = tomorrow when it is about making new questions or the murli for them (questions can't be saved for past dates). If "कल" could mean yesterday or tomorrow and the message doesn't make it clear, ask. Say the exact date you understood in your reply. Never assume a date on your own, and don't reuse a date from earlier in the chat without asking.
+- Every time the teacher asks for questions from a murli, first ask which date's murli to use, in one short question (you may suggest today's date). Skip this question when the teacher's latest message already names the date, either as a calendar date (for example "14 नवंबर की मुरली") or as a day relative to today's date given below: "आज" / "today" = today, "परसों" = the day after tomorrow, and "कल" / "tomorrow" = tomorrow when it is about making new questions or the murli for them (questions can't be saved for past dates), "आने वाला कल" / "अगला दिन" = tomorrow, and "बीता कल" / "बीते कल" / "पिछला दिन" / "yesterday" = yesterday (questions from yesterday's murli are saved for today unless the teacher names another date). If "कल" could mean yesterday or tomorrow and the message doesn't make it clear, ask. Say the exact date you understood in your reply. Never assume a date on your own, and don't reuse a date from earlier in the chat without asking.
+- When the teacher asks to see or read a murli (for example "आने वाले कल की पूरी मुरली दिखाओ"), call fetch_murli for that date with show = true. The app then shows the teacher the whole murli exactly as published, so do not retype or summarise it: reply in one short line with the date, and offer to make questions from it. In every other fetch_murli call, show = false.
 - Make questions from the whole murli, not only its beginning: spread them across the essence, the murli from start to end, the blessing (vardan) and the slogan.
 - The murli date and the quiz date can differ: questions may be made from any day's murli, but they can only be saved for today or a later date (usually today, unless the teacher says otherwise).
 - Use the Hindi murli by default. You may also fetch the English murli of the same date to make the English translation faithful.
@@ -62,7 +63,7 @@ const versionSchema = {
   properties: {
     q: { type: 'string', description: 'Question text' },
     opts: { type: 'array', items: { type: 'string' }, description: 'Options for murli questions; [] for chart' },
-    hint: { type: 'string', description: 'Hint, or "" ' },
+    hint: { type: 'string', description: 'Always "" (no hints in this chat)' },
     exp: { type: 'string', description: 'Point from the murli, or ""' },
     title: { type: 'string', description: 'Short label for chart questions, or ""' },
   },
@@ -94,9 +95,10 @@ export const TOOLS = [
     input_schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['date', 'language'],
+      required: ['date', 'language', 'show'],
       properties: {
         date: { type: 'string', description: 'Murli date, YYYY-MM-DD' },
+        show: { type: 'boolean', description: 'true when the teacher asked to see / read this murli: the app opens its full text in the chat' },
         language: { type: 'string', enum: ['hi', 'en', 'gu'], description: 'hi = Hindi (default), en = English, gu = Gujarati' },
       },
     },

@@ -331,3 +331,29 @@
 .qc-tool.bad {
   color: #b3261e;
 }
+
+/* the whole murli fetched in the chat (open when the teacher asked to see it) */
+.qc-murli {
+  align-self: stretch;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  overflow: hidden;
+}
+.qc-murli summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: var(--red-deep);
+  background: var(--mist);
+}
+.qc-murli-text {
+  padding: 12px 14px 14px;
+  max-height: 65vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+}

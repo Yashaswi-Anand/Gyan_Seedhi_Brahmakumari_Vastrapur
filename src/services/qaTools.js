@@ -57,7 +57,7 @@ export function checkQuestion(q) {
   const version = (v) => ({
     q: clip(v?.q, 1000),
     opts: murli ? (Array.isArray(v?.opts) ? v.opts : []).map((o) => clip(o, 200)) : [],
-    hint: murli ? clip(v?.hint, 500) : '',
+    hint: '', // no hints on questions made or changed in the AI chat (a kept hint is put back by checkProposal)
     exp: murli ? clip(v?.exp, 1000) : '',
     title: murli ? '' : clip(v?.title, 120),
   });
@@ -115,6 +115,12 @@ export function checkProposal(name, input, all, today = todayKey()) {
     if (existing.date < today) return { error: pastError(existing.date, today), past: true };
     const r = checkQuestion(input?.question);
     if (r.error) return { error: r.error };
+    // the chat adds no hints, but a hint the teacher wrote on this question by hand stays as it was
+    for (const [l, v] of Object.entries(r.question.i18n || {})) {
+      const kept = existing.i18n?.[l]?.hint || (l === 'hi' ? existing.hint : '');
+      if (kept && r.question.category === 'murli') v.hint = kept;
+    }
+    r.question.hint = r.question.i18n.hi.hint; // the main (Hindi) fields copy i18n.hi
     if (r.question.date < today) return { error: pastError(r.question.date, today), past: true };
     return { existing, question: r.question };
   }

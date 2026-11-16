@@ -13,11 +13,24 @@ const LONG_CHAT = 70;
 const EMPTY = { messages: [], cards: {}, draft: {} };
 
 const SUGGESTIONS = [
-  'कल (अगले दिन) की पूरी मुरली से कल के लिए 5 मुरली प्रश्न और 5 चार्ट प्रश्न बनाओ',
-  'मुरली से आज के लिए 5 मुरली प्रश्न और 5 चार्ट प्रश्न बनाओ',
-  'कल के प्रश्न दिखाओ',
-  'आज के लिए 5 चार्ट प्रश्न बनाओ',
+  'आने वाले कल की पूरी मुरली दिखाओ',
+  'बीते कल की मुरली से आज के लिए 5 मुरली प्रश्न और 5 चार्ट प्रश्न बनाओ',
 ];
+
+/** The full text of a fetched murli (from its tool result), without the line the app adds for the AI. */
+function murliTextOf(chat, id) {
+  let content = chat.draft?.[id]?.content;
+  if (!content) {
+    for (const m of chat.messages) {
+      if (m.role !== 'user' || !Array.isArray(m.content)) continue;
+      const r = m.content.find((b) => b.type === 'tool_result' && b.tool_use_id === id);
+      if (r) content = typeof r.content === 'string' ? r.content : '';
+    }
+  }
+  if (!content || !content.startsWith('Official murli')) return '';
+  const at = content.indexOf('\n\n');
+  return at < 0 ? '' : content.slice(at + 2);
+}
 
 function load() {
   try {
@@ -332,16 +345,26 @@ ${m.text}`,
                 const card = chat.cards[b.id] || {};
                 if (b.name === 'fetch_murli') {
                   const langName = { hi: 'हिन्दी', en: 'English', gu: 'ગુજરાતી' }[b.input?.language] || '';
+                  const full = card.status === 'done' ? murliTextOf(chat, b.id) : '';
                   return (
-                    <p key={k} className={`qc-tool${card.status === 'failed' ? ' bad' : ''}`}>
-                      <Icon name="book" size={16} />{' '}
-                      {card.status === 'loading'
-                        ? t('मुरली ला रहे हैं…')
-                        : card.status === 'failed'
-                          ? t(card.code === 'not_found' ? 'इस तारीख की मुरली नहीं मिली' : 'मुरली नहीं आ पाई')
-                          : t('मुरली पढ़ी')}
-                      : {formatDateKey(b.input?.date, cal)} · {langName}
-                    </p>
+                    <Fragment key={k}>
+                      <p className={`qc-tool${card.status === 'failed' ? ' bad' : ''}`}>
+                        <Icon name="book" size={16} />{' '}
+                        {card.status === 'loading'
+                          ? t('मुरली ला रहे हैं…')
+                          : card.status === 'failed'
+                            ? t(card.code === 'not_found' ? 'इस तारीख की मुरली नहीं मिली' : 'मुरली नहीं आ पाई')
+                            : t('मुरली पढ़ी')}
+                        : {formatDateKey(b.input?.date, cal)} · {langName}
+                      </p>
+                      {full && (
+                        // the whole murli as fetched; open by itself when the teacher asked to see it
+                        <details className="qc-murli" open={!!b.input?.show}>
+                          <summary>{t('पूरी मुरली')}</summary>
+                          <div className="qc-murli-text">{full}</div>
+                        </details>
+                      )}
+                    </Fragment>
                   );
                 }
                 if (b.name === 'list_questions') {
