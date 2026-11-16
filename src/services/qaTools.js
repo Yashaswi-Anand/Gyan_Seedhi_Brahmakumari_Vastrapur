@@ -94,6 +94,9 @@ const pastError = (date, today) =>
  * Checks a whole proposal. Returns { error } or the cleaned data the card shows and saves.
  * The AI may only touch questions dated today or later (checked again when Apply is tapped).
  */
+const CHART_FIXED =
+  'chart questions are fixed (the same every day) and are not made or changed in this chat; make only murli questions. The teacher changes chart questions by hand in प्रश्न सूची.';
+
 export function checkProposal(name, input, all, today = todayKey()) {
   const byId = new Map(all.map((q) => [q.id, q]));
   if (name === 'propose_add_questions') {
@@ -102,6 +105,7 @@ export function checkProposal(name, input, all, today = todayKey()) {
     if (list.length > 3) return { error: 'at most 3 questions per call' };
     const questions = [];
     for (const [i, q] of list.entries()) {
+      if (q?.category === 'chart') return { error: `question ${i + 1}: ${CHART_FIXED}` };
       const r = checkQuestion(q);
       if (r.error) return { error: `question ${i + 1}: ${r.error}` };
       if (r.question.date < today) return { error: `question ${i + 1}: ${pastError(r.question.date, today)}`, past: true };
@@ -113,6 +117,7 @@ export function checkProposal(name, input, all, today = todayKey()) {
     const existing = byId.get(input?.id);
     if (!existing) return { error: `no question with id ${input?.id}; call list_questions first` };
     if (existing.date < today) return { error: pastError(existing.date, today), past: true };
+    if (existing.category === 'chart' || input?.question?.category === 'chart') return { error: CHART_FIXED };
     const r = checkQuestion(input?.question);
     if (r.error) return { error: r.error };
     // the chat adds no hints, but a hint the teacher wrote on this question by hand stays as it was
@@ -128,6 +133,7 @@ export function checkProposal(name, input, all, today = todayKey()) {
     const ids = Array.isArray(input?.ids) ? input.ids : [];
     const found = ids.map((id) => byId.get(id)).filter(Boolean);
     if (!found.length) return { error: 'none of these ids exist; call list_questions first' };
+    if (found.some((q) => q.category === 'chart')) return { error: CHART_FIXED };
     const past = found.find((q) => q.date < today);
     if (past) return { error: pastError(past.date, today), past: true };
     return { questions: found, missing: ids.filter((id) => !byId.has(id)) };

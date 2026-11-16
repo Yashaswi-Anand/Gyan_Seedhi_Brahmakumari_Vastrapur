@@ -14,7 +14,7 @@ const EMPTY = { messages: [], cards: {}, draft: {} };
 
 const SUGGESTIONS = [
   'आने वाले कल की पूरी मुरली दिखाओ',
-  'बीते कल की मुरली से आज के लिए 5 मुरली प्रश्न और 5 चार्ट प्रश्न बनाओ',
+  'बीते कल की मुरली से आज के लिए 5 मुरली प्रश्न बनाओ',
 ];
 
 /** The full text of a fetched murli (from its tool result), without the line the app adds for the AI. */

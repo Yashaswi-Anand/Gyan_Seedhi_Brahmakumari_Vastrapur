@@ -78,7 +78,7 @@ The mobile number in `TEACHER_MOBILES` (`src/constants/config.js`, currently `94
 - **प्रश्न सूची** (inside the same tab): every question, grouped by date (newest first), showing category (Murli/Chart), options, correct answer, hint and murli point. The teacher can also **add**, **edit** (including the date) and **delete** questions by hand, with a confirmation step before deleting.
 - **परिणाम tab**: every student's Murli, Chart and total marks for this week, this month or all time, ranked by total. The top 3 are highlighted, ties share a rank (1, 1, 3), and the list updates live.
 
-Each day's quiz uses the questions dated today. If there are none, it uses the most recent earlier date that has questions.
+Each day's quiz uses the murli questions dated today. If there are none, it uses the most recent earlier date that has murli questions. **Chart questions are fixed:** every day uses the most recent chart questions, so a new day needs only its 5 murli questions. The AI chat makes murli questions only and can't add, change or delete chart questions; the teacher changes them by hand in प्रश्न सूची (adding new chart questions on a date makes them the set from that day on).
 
 ### Translations with Gemini
 

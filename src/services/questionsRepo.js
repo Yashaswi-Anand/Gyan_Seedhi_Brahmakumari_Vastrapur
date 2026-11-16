@@ -36,22 +36,41 @@ export function sortQuestions(list) {
 /** Drafts (published === false) are hidden from students; older questions have no flag = published. */
 export const isPublished = (q) => q.published !== false;
 
-/**
- * The question set for a day: published questions dated `dateKey`, or if there are none,
- * the most recent earlier date that has published questions. Returns { date, questions }.
- */
-export async function fetchQuestionSet(dateKey) {
+/** Published questions dated on or before `dateKey`, newest date first. */
+async function recentPublished(dateKey) {
   const recent = await getDocs(query(col, where('date', '<=', dateKey), orderBy('date', 'desc'), limit(200)));
-  const live = recent.docs.map(fromSnap).filter(isPublished);
-  if (!live.length) return { date: null, questions: [] };
-  const date = live[0].date; // newest date first
-  return { date, questions: sortQuestions(live.filter((q) => q.date === date)) };
+  return recent.docs.map(fromSnap).filter(isPublished);
 }
 
-/** All questions saved for one date (published and drafts), in the order students see them. */
+/** The questions of one category from the newest date that has any (list is newest first). */
+function latestOf(list, category) {
+  const own = list.filter((q) => q.category === category);
+  return own.length ? own.filter((q) => q.date === own[0].date) : [];
+}
+
+/**
+ * The question set for a day. Murli questions: those dated `dateKey`, or if there are none,
+ * the most recent earlier date's. Chart questions stay the same every day, so they come from
+ * the most recent date that has chart questions (usually an earlier day).
+ * Returns { date, questions }; `date` is the murli questions' date.
+ */
+export async function fetchQuestionSet(dateKey) {
+  const live = await recentPublished(dateKey);
+  if (!live.length) return { date: null, questions: [] };
+  const murli = latestOf(live, 'murli');
+  const chart = latestOf(live, 'chart');
+  return { date: (murli[0] || chart[0]).date, questions: sortQuestions([...murli, ...chart]) };
+}
+
+/**
+ * All questions saved for one date (published and drafts), in the order students see them.
+ * A date without its own chart questions gets the chart questions students see that day.
+ */
 export async function fetchQuestionsForDate(dateKey) {
   const snap = await getDocs(query(col, where('date', '==', dateKey)));
-  return sortQuestions(snap.docs.map(fromSnap));
+  const own = snap.docs.map(fromSnap);
+  if (!own.length || own.some((q) => q.category === 'chart')) return sortQuestions(own);
+  return sortQuestions([...own, ...latestOf(await recentPublished(dateKey), 'chart')]);
 }
 
 /** Live list of every question (teacher view). Returns an unsubscribe function. */
