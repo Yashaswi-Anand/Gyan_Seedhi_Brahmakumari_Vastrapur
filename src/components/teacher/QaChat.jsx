@@ -13,6 +13,7 @@ const LONG_CHAT = 70;
 const EMPTY = { messages: [], cards: {}, draft: {} };
 
 const SUGGESTIONS = [
+  'कल (अगले दिन) की पूरी मुरली से कल के लिए 5 मुरली प्रश्न और 5 चार्ट प्रश्न बनाओ',
   'मुरली से आज के लिए 5 मुरली प्रश्न और 5 चार्ट प्रश्न बनाओ',
   'कल के प्रश्न दिखाओ',
   'आज के लिए 5 चार्ट प्रश्न बनाओ',
@@ -54,7 +55,6 @@ export default function QaChat({ questions }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [input, setInput] = useState('');
-  const endRef = useRef(null);
   const numbers = useMemo(() => numberQuestions(questions), [questions]);
   const [budget, setBudget] = useState(null); // this week's usage vs the weekly limit
 
@@ -82,8 +82,41 @@ export default function QaChat({ questions }) {
     }
   };
 
+  // Opening the tab: jump to the latest message (the bottom of the page, above the input bar).
+  // The page resets the scroll to the top on every tab change after this runs, and the question
+  // list loads a moment later, so keep following the bottom for a short while, until the
+  // teacher touches or scrolls the page.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    let active = true;
+    const toBottom = () => active && window.scrollTo(0, document.documentElement.scrollHeight);
+    const frame = requestAnimationFrame(toBottom);
+    const ro = new ResizeObserver(toBottom);
+    ro.observe(document.body);
+    const stop = () => {
+      active = false;
+      ro.disconnect();
+    };
+    const timer = setTimeout(stop, 2000);
+    const opts = { passive: true, once: true };
+    window.addEventListener('touchstart', stop, opts);
+    window.addEventListener('wheel', stop, opts);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+      window.removeEventListener('touchstart', stop);
+      window.removeEventListener('wheel', stop);
+      stop();
+    };
+  }, []);
+
+  // New messages: scroll smoothly to them.
+  const seen = useRef(null);
+  useEffect(() => {
+    const key = `${chat.messages.length}:${busy}`;
+    if (seen.current !== null && seen.current !== key) {
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+    }
+    seen.current = key;
   }, [chat.messages.length, busy]);
 
   const pendingUses = lastToolUses(chat);
@@ -259,7 +292,7 @@ ${m.text}`,
           <div className="qc-msg ai">
             <p>
               {t(
-                'नमस्ते! मैं प्रश्न बनाने और सँभालने में आपकी मदद करूँगा। जो काम चाहिए, लिखिए — जैसे मुरली पेस्ट करके "इससे आज के प्रश्न बनाओ"। हर बदलाव से पहले मैं आपको दिखाऊँगा, आप "जोड़ें" या "रद्द करें" दबाएँ।',
+                'ॐ शान्ति! मैं प्रश्न बनाने और सँभालने में आपकी मदद करूँगा। जो काम चाहिए, लिखिए — जैसे मुरली पेस्ट करके "इससे आज के प्रश्न बनाओ"। हर बदलाव से पहले मैं आपको दिखाऊँगा, आप "जोड़ें" या "रद्द करें" दबाएँ।',
               )}
             </p>
             <div className="qc-chips">
@@ -362,7 +395,6 @@ ${m.text}`,
           </button>
         )}
         {chat.messages.length > LONG_CHAT && <p className="note">{t('चैट लंबी हो गई है। नया काम “नई चैट” से शुरू करें।')}</p>}
-        <div ref={endRef} />
       </div>
 
       <form

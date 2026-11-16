@@ -261,13 +261,13 @@
   height: 46px;
   border: 0;
   border-radius: 50%;
-  background: #6b3aa0;
+  background: var(--red);
   color: #fff;
   display: grid;
   place-items: center;
 }
 .qc-send:disabled {
-  background: #d9c8ea;
+  background: #e7a9b3;
   cursor: not-allowed;
 }
 
