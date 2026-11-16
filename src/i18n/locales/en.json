@@ -519,6 +519,13 @@
   "पिछले 7 दिनों के कार्ड पर टैप करके उस दिन के उत्तर देखें।": "Tap a card from the last 7 days to see that day's answers.",
   "जाँच हो रही है…": "Checking…",
   "आने वाले कल की पूरी मुरली दिखाओ": "Show tomorrow's full murli",
-  "बीते कल की मुरली से आज के लिए 5 मुरली प्रश्न बनाओ": "Make 5 murli questions for today from yesterday's murli",
-  "पूरी मुरली": "Full murli"
+  "आने वाले कल की मुरली से आने वाले कल के लिए 5 मुरली प्रश्न बनाओ": "Make 5 murli questions for tomorrow from tomorrow's murli",
+  "पूरी मुरली": "Full murli",
+  "AI चैट में जिन प्रश्नों पर ✓ लगाया, वे यहाँ हैं। तारीख चुनकर प्रकाशित करें।": "The questions you ticked ✓ in the AI chat are here. Choose a date and publish them.",
+  "किस तारीख के लिए?": "For which date?",
+  "आज या आगे की तारीख चुनें।": "Choose today or a later date.",
+  "इस तारीख पर पहले से ": "This date already has ",
+  " मुरली प्रश्न हैं। नए प्रश्न उनके बाद जुड़ेंगे।": " murli questions. The new ones will be added after them.",
+  " प्रश्न प्रकाशित हुए, बाकी नहीं हो पाए। इंटरनेट जाँचकर फिर से कोशिश करें।": " questions were published; the rest couldn't be. Check the internet and try again.",
+  " प्रश्न प्रकाशित हो गए।": " questions published."
 }

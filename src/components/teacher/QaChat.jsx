@@ -2,9 +2,10 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/common/Icon';
 import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
-import { CANCELLED, applyProposal, checkProposal, numberQuestions, runListQuestions } from '@/services/qaTools';
+import { CANCELLED, applyProposal, checkOffer, checkProposal, numberQuestions, offerResult, runListQuestions } from '@/services/qaTools';
 import { postJson, serverErrorMessage } from '@/services/serverApi';
 import { formatDateKey, todayKey } from '@/utils/date';
+import OfferCard from './OfferCard';
 import ProposalCard from './ProposalCard';
 
 const STORE_KEY = 'gs2_qa_chat_v2'; // v2: Gemini chats (v1 Claude chats can't be continued)
@@ -14,7 +15,7 @@ const EMPTY = { messages: [], cards: {}, draft: {} };
 
 const SUGGESTIONS = [
   'आने वाले कल की पूरी मुरली दिखाओ',
-  'बीते कल की मुरली से आज के लिए 5 मुरली प्रश्न बनाओ',
+  'आने वाले कल की मुरली से आने वाले कल के लिए 5 मुरली प्रश्न बनाओ',
 ];
 
 /** The full text of a fetched murli (from its tool result), without the line the app adds for the AI. */
@@ -149,6 +150,13 @@ export default function QaChat({ questions }) {
       }
       if (u.name === 'fetch_murli') {
         cards[u.id] = { status: 'loading' }; // fetched right after (runMurliFetches)
+        continue;
+      }
+      if (u.name === 'offer_questions') {
+        // shown as a checklist; answered straight away, the teacher ticks questions later
+        const offer = checkOffer(u.input);
+        draft[u.id] = offerResult(offer);
+        cards[u.id] = { status: 'offer', offer };
         continue;
       }
       const checked = checkProposal(u.name, u.input, questionsRef.current);
@@ -366,6 +374,9 @@ ${m.text}`,
                       )}
                     </Fragment>
                   );
+                }
+                if (b.name === 'offer_questions') {
+                  return card.offer ? <OfferCard key={k} id={b.id} offer={card.offer} /> : null;
                 }
                 if (b.name === 'list_questions') {
                   return (

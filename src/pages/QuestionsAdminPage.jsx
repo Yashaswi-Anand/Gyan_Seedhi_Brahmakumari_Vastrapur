@@ -3,12 +3,14 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
 import DraftsBar from '@/components/teacher/DraftsBar';
+import PicksDraft from '@/components/teacher/PicksDraft';
 import QaChat from '@/components/teacher/QaChat';
 import QuestionForm from '@/components/teacher/QuestionForm';
 import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
 import { OPTION_LETTERS } from '@/i18n/calendar';
 import { registerQuestionTranslations } from '@/i18n/translate';
+import { usePicks } from '@/services/picks';
 import {
   addQuestion,
   deleteQuestion,
@@ -102,8 +104,17 @@ export default function QuestionsAdminPage() {
   const [deleting, setDeleting] = useState(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
-  const [view, setView] = useState('chat'); // 'chat' | 'list'
+  const [view, setView] = useState('chat'); // 'chat' | 'list' | 'picks'
+  const picks = usePicks(); // questions ticked in the chat → the Draft tab (shown only while there are some)
   const [day, setDay] = useState(todayKey); // date filter for the question list (default: today)
+  const tab = view === 'picks' && !picks.length ? 'chat' : view; // the Draft tab hides once it's empty
+
+  // ticked questions were published: show that date's questions
+  const published = (date, n) => {
+    setDay(date);
+    setView('list');
+    setToast(`${n} प्रश्न प्रकाशित हो गए।`);
+  };
 
   useEffect(
     () =>
@@ -157,13 +168,15 @@ export default function QuestionsAdminPage() {
     <>
       <TopBar title="AI" />
       <div className="pad qa-switch">
-        <div className="seg two" role="tablist">
+        <div className={`seg ${picks.length ? 'three' : 'two'}`} role="tablist">
           {[
             ['chat', 'चैट', 'chat'],
+            ...(picks.length ? [['picks', 'ड्राफ्ट', 'edit']] : []),
             ['list', 'प्रश्न सूची', 'list'],
           ].map(([id, label, icon]) => (
-            <button key={id} role="tab" aria-selected={view === id} className={view === id ? 'on' : ''} onClick={() => setView(id)}>
+            <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => setView(id)}>
               <Icon name={icon} size={18} /> {t(label)}
+              {id === 'picks' && <span className="tab-count">{picks.length}</span>}
             </button>
           ))}
         </div>
@@ -173,8 +186,10 @@ export default function QuestionsAdminPage() {
         <DraftsBar questions={list || []} />
       </div>
 
-      {view === 'chat' ? (
+      {tab === 'chat' ? (
         <QaChat questions={list || []} />
+      ) : tab === 'picks' ? (
+        <PicksDraft questions={list || []} onPublished={published} />
       ) : (
       <div className="pad stack qa-page">
         <button className="btn" onClick={() => setEditing({})}>

@@ -1,5 +1,7 @@
 /* Runs the AI chat's tool calls in the browser.
    - list_questions runs straight away (read-only).
+   - offer_questions is checked here and shown as a checklist; ticked questions wait in the
+     Draft tab (services/picks.js) until the teacher publishes them for a date.
    - propose_* calls are checked here, shown to the teacher as cards, and only written to
      Firestore when the teacher taps Apply.
    - Limits: questions only (no tools exist for users or results), and only questions dated
@@ -94,6 +96,40 @@ const pastError = (date, today) =>
  * Checks a whole proposal. Returns { error } or the cleaned data the card shows and saves.
  * The AI may only touch questions dated today or later (checked again when Apply is tapped).
  */
+/**
+ * offer_questions → { format, murliDate, note, items: [{ question } | { error }] }.
+ * Offered questions have no quiz date yet (the teacher picks it in the Draft tab), so they are
+ * checked with today's date as a stand-in.
+ */
+export function checkOffer(input, today = todayKey()) {
+  const format = TAGS.includes(input?.format) ? input.format : TAGS[0];
+  const list = Array.isArray(input?.questions) ? input.questions.slice(0, 5) : [];
+  const items = list.map((q) => {
+    const r = checkQuestion({ date: today, category: 'murli', tag: format, ans: q?.ans, i18n: q?.i18n });
+    return r.error ? { error: r.error } : { question: r.question };
+  });
+  return {
+    format,
+    murliDate: DATE_RE.test(input?.murli_date) ? input.murli_date : '',
+    note: clip(input?.note, 200),
+    items,
+    error: items.length ? '' : 'no questions in the offer',
+  };
+}
+
+/** Tool result for offer_questions (sent back straight away; the teacher ticks later). */
+export function offerResult(offer) {
+  const bad = offer.items.map((it, i) => (it.error ? `question ${i + 1}: ${it.error}` : '')).filter(Boolean);
+  const shown = offer.items.length - bad.length;
+  if (!shown) return { content: `INVALID: ${offer.error || bad.join('; ')}. Nothing was shown; fix it and call offer_questions again.`, is_error: true };
+  return {
+    content:
+      `Shown to the teacher: ${shown} "${offer.format}" question(s), each with a checkbox. Nothing is saved yet; ` +
+      'the teacher ticks the ones to keep and publishes them for a date from the Draft tab.' +
+      (bad.length ? ` Not shown (invalid): ${bad.join('; ')}. You may offer corrected versions.` : ''),
+  };
+}
+
 const CHART_FIXED =
   'chart questions are fixed (the same every day) and are not made or changed in this chat; make only murli questions. The teacher changes chart questions by hand in प्रश्न सूची.';
 

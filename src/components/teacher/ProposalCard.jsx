@@ -6,7 +6,7 @@ import { formatDateKey } from '@/utils/date';
 const LANG_BADGE = { hi: 'हि', en: 'En', gu: 'ગુ' };
 
 /** One question, shown in the teacher's current language when that version exists. */
-function QuestionPreview({ q, number }) {
+export function QuestionPreview({ q, number, showDate = true }) {
   const { t, lang, cal } = useLang();
   const v = q.i18n?.[lang] || q.i18n?.hi || q;
   const murli = q.category === 'murli';
@@ -15,7 +15,7 @@ function QuestionPreview({ q, number }) {
     <div className="pv-q">
       <div className="qa-top">
         {number && <span className="qa-n">{number}</span>}
-        <span className="pv-date">{formatDateKey(q.date, cal)}</span>
+        {showDate && <span className="pv-date">{formatDateKey(q.date, cal)}</span>}
         <span className={`chip cat${murli ? '' : ' ch'}`}>{t(murli ? 'मुरली' : 'चार्ट')}</span>
         {murli && q.tag && <span className="chip">{t(q.tag)}</span>}
         {!murli && v.title && <span className="chip gold">{v.title}</span>}
