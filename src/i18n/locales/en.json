@@ -512,5 +512,9 @@
   "पिछला महीना": "Previous month",
   "अगला महीना": "Next month",
   "पूरे अंक": "Full marks",
-  "किसी दिन पर टैप करके उस दिन के अंक देखें।": "Tap a day to see that day's marks."
+  "किसी दिन पर टैप करके उस दिन के अंक देखें।": "Tap a day to see that day's marks.",
+  "उत्तर देखें": "See answers",
+  "उत्तर छिपाएँ": "Hide answers",
+  "आपने पहले चुना: ": "You first picked: ",
+  "पिछले 7 दिनों के कार्ड पर टैप करके उस दिन के उत्तर देखें।": "Tap a card from the last 7 days to see that day's answers."
 }

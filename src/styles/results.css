@@ -238,3 +238,42 @@
     padding: 12px;
   }
 }
+
+/* ---------- tap a card (latest 7 days) to see that day's answers ---------- */
+.daycard.tappable { padding: 0; overflow: hidden; }
+.daytap {
+  display: block;
+  width: 100%;
+  padding: 14px 14px 10px;
+  border: 0;
+  background: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.daytap:focus-visible { outline: 3px solid var(--red-soft); outline-offset: -3px; }
+.daymore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  color: var(--red-deep);
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.daymore svg { transform: rotate(-90deg); transition: transform 0.2s; }
+.daycard.open .daymore svg { transform: rotate(90deg); }
+.dayans { padding: 0 14px 6px; }
+.dayans .ans { border-top: 1px solid var(--line); }
+.ans .aw {
+  display: block;
+  margin-top: 2px;
+  font-size: 13.5px;
+  color: var(--red-deep);
+}
+.ans .more .mq { display: block; margin-bottom: 4px; color: var(--ink); font-weight: 600; }
+.note.anshint { margin: 0; }

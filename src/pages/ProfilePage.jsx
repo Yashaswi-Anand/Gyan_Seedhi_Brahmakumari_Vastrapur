@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/common/Icon';
-import InstallAppCard from '@/components/common/InstallAppCard';
 import TopBar from '@/components/common/TopBar';
 import GrowthTree from '@/components/tree/GrowthTree';
 import { useApp } from '@/context/AppContext';
@@ -101,8 +100,6 @@ export default function ProfilePage() {
             })}
           </div>
         </div>
-
-        <InstallAppCard />
 
         <button
           className="btn line"

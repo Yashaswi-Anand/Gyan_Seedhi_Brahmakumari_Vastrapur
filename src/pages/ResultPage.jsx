@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Icon from '@/components/common/Icon';
 import PointsSplit from '@/components/common/PointsSplit';
 import TopBar from '@/components/common/TopBar';
+import AnswerList from '@/components/results/AnswerList';
 import GrowthTree from '@/components/tree/GrowthTree';
 import WheelBlock from '@/components/wheel/WheelBlock';
 import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
@@ -28,54 +29,9 @@ function useCountUp(target, ms = 800) {
   return value;
 }
 
-function AnswerRow({ q, r, k }) {
-  const { t, tq } = useLang();
-  const self = q.type === 'self';
-  const answer = self
-    ? r.timeout
-      ? t('समय पूरा हुआ')
-      : `${r.pts} / ${PERQ}`
-    : q.type === 'match'
-      ? q.pairs.map((p) => `${tq(p[0])} → ${tq(p[1])}`).join('\n')
-      : tq(q.opts[q.ans]);
-  const icCls = self ? (r.pts === PERQ ? 'y' : r.pts ? 'r' : 'n') : r.first ? 'y' : r.timeout ? 'n' : 'r';
-  const icTxt = self ? (r.timeout ? '⏱' : r.pts) : r.first ? '✓' : r.timeout ? '⏱' : '↻';
-  const label = t(`प्रश्न ${k + 1} · `) + (self ? t('चार्ट · ') + tq(q.ctxChip) : t('मुरली · ') + tq(q.tag));
-  return (
-    <details>
-      <summary>
-        <span className={`ic ${icCls}`}>{icTxt}</span>
-        <span>
-          <span className="qq">{label}</span>
-          <br />
-          <span className="aa" style={{ whiteSpace: 'pre-line' }}>
-            {answer}
-          </span>
-        </span>
-      </summary>
-      <div className="more">
-        {self ? (
-          tq(q.q)
-        ) : (
-          <>
-            {tq(q.exp)}
-            {q.life && (
-              <>
-                <br />
-                <br />
-                {tq(q.life)}
-              </>
-            )}
-          </>
-        )}
-      </div>
-    </details>
-  );
-}
-
 export default function ResultPage() {
   const { user, lastQuiz } = useApp();
-  const { t, lang, tq } = useLang();
+  const { t, lang } = useLang();
   const navigate = useNavigate();
   const shown = useCountUp(lastQuiz?.summary.tot ?? 0);
 
@@ -145,11 +101,7 @@ export default function ResultPage() {
 
         <div className="sec">
           <h3>{t('सही उत्तर')}</h3>
-          <div className="ans">
-            {qs.map((q, k) => (
-              <AnswerRow key={k} q={q} r={res[k]} k={k} />
-            ))}
-          </div>
+          <AnswerList qs={qs} res={res} />
         </div>
 
         <button className="btn soft" onClick={() => navigate('/rank')}>

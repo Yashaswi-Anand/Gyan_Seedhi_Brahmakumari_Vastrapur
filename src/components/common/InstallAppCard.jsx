@@ -19,7 +19,7 @@ export default function InstallAppCard() {
   };
 
   return (
-    <button className="btn" onClick={install}>
+    <button className="btn install-top" onClick={install}>
       <Icon name="download" size={20} />
       {t('ऐप इंस्टॉल करें')}
     </button>

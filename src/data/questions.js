@@ -118,7 +118,7 @@ export function seedQuestionDocs() {
 /** Firestore question document → the shape the quiz engine uses. */
 export function toQuizQuestion(d) {
   if (d.category === 'chart') {
-    return { id: d.id, type: 'self', tag: 'चार्ट', ctxChip: d.title || '', q: d.q };
+    return { id: d.id, type: 'self', tag: 'चार्ट', ctxChip: d.title || '', q: d.q, i18n: d.i18n };
   }
   return {
     id: d.id,
@@ -129,6 +129,7 @@ export function toQuizQuestion(d) {
     ans: d.ans,
     hint: d.hint || '',
     exp: d.exp || '',
+    i18n: d.i18n,
   };
 }
 

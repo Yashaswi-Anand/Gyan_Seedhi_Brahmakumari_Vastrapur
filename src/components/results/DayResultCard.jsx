@@ -1,6 +1,10 @@
+import { useMemo, useState } from 'react';
+import Icon from '@/components/common/Icon';
 import { useLang } from '@/context/LanguageContext';
+import { answerToQuestion, hasAnswers } from '@/services/answers';
 import { murliPts } from '@/services/stats';
 import { parseDateKey, todayKey } from '@/utils/date';
+import AnswerList from './AnswerList';
 
 /** Older plays don't store their maximum marks; those days had 5 + 5 questions of 20 marks. */
 const DEFAULT_MAX = 100;
@@ -23,7 +27,7 @@ function ScoreBar({ label, value, max, tone }) {
   );
 }
 
-/** One practice day: date tile, accuracy, day total, and murli / chart bars. */
+/** One practice day: date tile, accuracy, day total, murli / chart bars; tap (latest 7 days) to see that day's answers. */
 export default function DayResultCard({ play }) {
   const { t, cal } = useLang();
   const d = parseDateKey(play.date);
@@ -33,9 +37,12 @@ export default function DayResultCard({ play }) {
   const mMax = play.mMax ?? DEFAULT_MAX;
   const cMax = play.cMax ?? DEFAULT_MAX;
   const total = murli + (chart ?? 0);
+  const canOpen = hasAnswers(play);
+  const [open, setOpen] = useState(false);
+  const qs = useMemo(() => (open && canOpen ? play.answers.map(answerToQuestion) : null), [open, canOpen, play.answers]);
 
-  return (
-    <article className={`daycard${isToday ? ' is-today' : ''}`}>
+  const body = (
+    <>
       <div className="dayhead">
         <div className="datetile">
           <b>{d.getDate()}</b>
@@ -57,6 +64,25 @@ export default function DayResultCard({ play }) {
         <ScoreBar label={t('मुरली')} value={murli} max={mMax} tone="m" />
         <ScoreBar label={t('चार्ट')} value={chart ?? '—'} max={cMax} tone="c" />
       </div>
+    </>
+  );
+
+  if (!canOpen) return <article className={`daycard${isToday ? ' is-today' : ''}`}>{body}</article>;
+
+  return (
+    <article className={`daycard tappable${isToday ? ' is-today' : ''}${open ? ' open' : ''}`}>
+      <button type="button" className="daytap" aria-expanded={open} onClick={() => setOpen(!open)}>
+        {body}
+        <span className="daymore">
+          {t(open ? 'उत्तर छिपाएँ' : 'उत्तर देखें')}
+          <Icon name="back" size={16} />
+        </span>
+      </button>
+      {qs && (
+        <div className="dayans">
+          <AnswerList qs={qs} res={play.answers} />
+        </div>
+      )}
     </article>
   );
 }

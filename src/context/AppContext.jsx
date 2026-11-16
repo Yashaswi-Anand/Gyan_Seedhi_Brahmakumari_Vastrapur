@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppContext } from './contextObjects';
 import { DEMO_ACCOUNT, isTeacherMobile } from '@/constants/config';
+import { pruneAllAnswers, pruneAnswers } from '@/services/answers';
 import { syncPlays } from '@/services/resultsRepo';
 import {
   createUserRecord,
@@ -18,7 +19,7 @@ const DEMO_HISTORY = [
 ];
 
 export function AppProvider({ children }) {
-  const [db, setDb] = useState(loadUsers);
+  const [db, setDb] = useState(() => pruneAllAnswers(loadUsers()));
   const [session, setSession] = useState(loadSession);
   /** Last finished quiz ({ qs, res, summary }) so the result screen can show it. */
   const [lastQuiz, setLastQuiz] = useState(null);
@@ -89,7 +90,10 @@ export function AppProvider({ children }) {
     setSession(mobile);
   }, []);
 
-  const addPlay = useCallback((play) => updateUser((u) => ({ ...u, plays: [...u.plays, play] })), [updateUser]);
+  const addPlay = useCallback(
+    (play) => updateUser((u) => ({ ...u, plays: pruneAnswers([...u.plays, play]) })),
+    [updateUser],
+  );
 
   const recordSpin = useCallback(
     (idx) => updateUser((u) => ({ ...u, spins: { ...u.spins, [todayKey()]: idx } })),

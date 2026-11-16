@@ -47,6 +47,7 @@ function finishQuestion(state, wrongs, timeout, now) {
     first: !timeout && wrongs === 0,
     time: timeout ? TLIM : Math.min(TLIM, Math.round(elapsed)),
     timeout: !!timeout,
+    wrong: q.struck.slice(), // options picked before the right one (for the day's answer review)
   };
   return {
     ...state,

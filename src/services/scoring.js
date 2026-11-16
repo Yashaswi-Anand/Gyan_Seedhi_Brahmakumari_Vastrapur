@@ -3,6 +3,7 @@ import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
 import { BADGES } from '@/data/badges';
 import { todayKey } from '@/utils/date';
 import { sum } from '@/utils/helpers';
+import { buildAnswers } from './answers';
 import { earnedBadgeIds, hasPlayedToday } from './stats';
 
 export function summarizeQuiz(qs, res) {
@@ -40,6 +41,7 @@ export function buildResult(user, qs, res, practice) {
       acc: s.acc,
       timeSec: s.time,
       jodi: s.jodi,
+      answers: buildAnswers(qs, res), // kept on this device for 7 days, never uploaded
     };
     const updated = { ...user, plays: [...user.plays, play] };
     const before = earnedBadgeIds(user);

@@ -7,6 +7,7 @@ import ResultsSummary from '@/components/results/ResultsSummary';
 import Leaderboard from '@/components/teacher/Leaderboard';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
+import { hasAnswers } from '@/services/answers';
 import { playsInScope, playsNewestFirst } from '@/services/stats';
 
 const SCOPES = [
@@ -87,6 +88,8 @@ function MyResults() {
         </div>
 
         <ResultsSummary plays={plays} />
+
+        {plays.some(hasAnswers) && <p className="note anshint">{t('पिछले 7 दिनों के कार्ड पर टैप करके उस दिन के उत्तर देखें।')}</p>}
 
         {plays.length ? (
           byMonth(plays).map((g) => {

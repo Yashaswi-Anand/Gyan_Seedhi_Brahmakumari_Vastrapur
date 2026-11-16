@@ -377,3 +377,6 @@
   color: var(--gold);
   font-size: 15px;
 }
+
+/* Install button at the top of Home */
+.btn.install-top{display:flex;width:calc(100% - 32px);margin:0 16px 12px}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/common/Icon';
+import InstallAppCard from '@/components/common/InstallAppCard';
 import LanguageSwitch from '@/components/common/LanguageSwitch';
 import Logo from '@/components/common/Logo';
 import PointsSplit from '@/components/common/PointsSplit';
@@ -66,6 +67,8 @@ export default function HomePage() {
         </div>
         <LanguageSwitch />
       </div>
+
+      <InstallAppCard />
 
       <div className="hello">
         <div className="hrow">
