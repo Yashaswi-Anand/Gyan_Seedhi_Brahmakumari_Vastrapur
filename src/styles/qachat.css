@@ -443,7 +443,10 @@
   color: var(--muted);
 }
 .pick-head .qa-btn {
+  flex: none;
+  width: auto;
   margin-left: auto;
+  padding: 6px 12px;
 }
 .pick-publish {
   display: flex;

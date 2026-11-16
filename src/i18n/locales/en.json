@@ -528,5 +528,6 @@
   " मुरली प्रश्न हैं। नए प्रश्न उनके बाद जुड़ेंगे।": " murli questions. The new ones will be added after them.",
   " प्रश्न प्रकाशित हुए, बाकी नहीं हो पाए। इंटरनेट जाँचकर फिर से कोशिश करें।": " questions were published; the rest couldn't be. Check the internet and try again.",
   " प्रश्न प्रकाशित हो गए।": " questions published.",
-  "तारीख चुनना ज़रूरी है।": "Choosing a date is required."
+  "तारीख चुनना ज़रूरी है।": "Choosing a date is required.",
+  "मुरली की तारीख नहीं दी गई": "Murli date not given"
 }

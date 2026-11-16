@@ -6,7 +6,7 @@ import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
 import { clearPicks, removePick, usePicks } from '@/services/picks';
 import { addQuestion } from '@/services/questionsRepo';
-import { formatDateKey, todayKey } from '@/utils/date';
+import { formatDateKey, parseDateKey, todayKey } from '@/utils/date';
 import { QuestionPreview } from './ProposalCard';
 
 /**
@@ -25,6 +25,18 @@ export default function PicksDraft({ questions, onPublished }) {
   const [error, setError] = useState('');
 
   const okDate = /^\d{4}-\d{2}-\d{2}$/.test(date) && date >= today;
+
+  // grouped by murli date (oldest murli first), ticking order within a group;
+  // published in this same order, so the numbers shown are the order students see
+  const groups = [];
+  for (const p of picks) {
+    const g = groups.find((x) => x.murliDate === (p.murliDate || ''));
+    if (g) g.items.push(p);
+    else groups.push({ murliDate: p.murliDate || '', items: [p] });
+  }
+  groups.sort((a, b) => (!a.murliDate ? 1 : !b.murliDate ? -1 : a.murliDate < b.murliDate ? -1 : a.murliDate > b.murliDate ? 1 : 0));
+  const ordered = groups.flatMap((g) => g.items);
+  const numberOf = new Map(ordered.map((p, i) => [p.key, i + 1]));
   const existing = questions.filter((q) => q.date === date && q.category === 'murli').length;
 
   const publish = async () => {
@@ -32,8 +44,8 @@ export default function PicksDraft({ questions, onPublished }) {
     setError('');
     let saved = 0;
     try {
-      // one by one, in the order they were ticked (that is the order students see)
-      for (const p of picks) {
+      // one by one, in the order shown (that is the order students see)
+      for (const p of ordered) {
         await addQuestion({ ...p.question, date }, { published: true });
         removePick(p.key);
         saved++;
@@ -58,22 +70,31 @@ export default function PicksDraft({ questions, onPublished }) {
     <div className="pad stack picks">
       <p className="note">{t('AI चैट में जिन प्रश्नों पर ✓ लगाया, वे यहाँ हैं। तारीख चुनकर प्रकाशित करें।')}</p>
 
-      {picks.map((p, i) => (
-        <article key={p.key} className="qa-item pick">
-          <div className="pick-head">
-            <span className="qa-n">{i + 1}</span>
-            {p.murliDate && (
-              <small>
-                {t('मुरली')}: {formatDateKey(p.murliDate, cal)}
-              </small>
-            )}
-            <button className="qa-btn del" onClick={() => removePick(p.key)} disabled={busy}>
-              <Icon name="close" size={18} />
-              {t('हटाएँ')}
-            </button>
+      {groups.map((g) => (
+        <section key={g.murliDate || 'none'} className="qa-day">
+          <h3 className="monthhead">
+            <span>
+              {g.murliDate
+                ? `${t('मुरली')}: ${cal.days[parseDateKey(g.murliDate).getDay()]}, ${formatDateKey(g.murliDate, cal)}`
+                : t('मुरली की तारीख नहीं दी गई')}
+            </span>
+            <small>{t(`${g.items.length} प्रश्न`)}</small>
+          </h3>
+          <div className="stack" style={{ gap: 12 }}>
+            {g.items.map((p) => (
+              <article key={p.key} className="qa-item pick">
+                <div className="pick-head">
+                  <span className="qa-n">{numberOf.get(p.key)}</span>
+                  <button className="qa-btn del" onClick={() => removePick(p.key)} disabled={busy}>
+                    <Icon name="close" size={18} />
+                    {t('हटाएँ')}
+                  </button>
+                </div>
+                <QuestionPreview q={p.question} showDate={false} />
+              </article>
+            ))}
           </div>
-          <QuestionPreview q={p.question} showDate={false} />
-        </article>
+        </section>
       ))}
 
       <section className="pick-publish">
