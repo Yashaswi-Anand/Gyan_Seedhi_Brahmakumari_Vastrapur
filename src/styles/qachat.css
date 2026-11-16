@@ -1,7 +1,14 @@
 /* Teacher Q/A chat with Gemini */
 
+/* चैट · ड्राफ्ट · प्रश्न सूची tabs stay at the top while the page scrolls */
 .qa-switch {
-  padding-bottom: 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: var(--mist);
+  box-shadow: 0 8px 10px -10px rgba(74, 34, 49, 0.35);
 }
 .seg.two {
   grid-template-columns: repeat(2, 1fr);
@@ -449,4 +456,10 @@
 }
 .pick-publish .err {
   margin: 0;
+}
+.pick-publish .req {
+  color: #b3261e;
+}
+.pick-publish .datefield.invalid {
+  border-color: #b3261e;
 }

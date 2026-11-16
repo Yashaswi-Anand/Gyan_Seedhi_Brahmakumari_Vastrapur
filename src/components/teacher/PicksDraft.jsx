@@ -18,7 +18,8 @@ export default function PicksDraft({ questions, onPublished }) {
   const { reload } = useQuestions();
   const picks = usePicks();
   const today = todayKey();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(''); // no default: the teacher must choose the date
+  const [tried, setTried] = useState(false); // publish tapped without a valid date
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -77,15 +78,31 @@ export default function PicksDraft({ questions, onPublished }) {
 
       <section className="pick-publish">
         <label className="qf">
-          <span>{t('किस तारीख के लिए?')}</span>
-          <DateField value={date} min={today} aria-label={t('तारीख')} onChange={(e) => setDate(e.target.value)} />
+          <span>
+            {t('किस तारीख के लिए?')} <b className="req">*</b>
+          </span>
+          <DateField
+            value={date}
+            min={today}
+            required
+            placeholder={t('तारीख चुनें')}
+            className={tried && !okDate ? 'invalid' : ''}
+            aria-label={t('तारीख')}
+            aria-invalid={tried && !okDate}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </label>
-        {!okDate && <p className="err">{t('आज या आगे की तारीख चुनें।')}</p>}
+        {date && !okDate && <p className="err">{t('आज या आगे की तारीख चुनें।')}</p>}
+        {!date && tried && <p className="err">{t('तारीख चुनना ज़रूरी है।')}</p>}
         {okDate && existing > 0 && (
           <p className="note">{t(`इस तारीख पर पहले से ${existing} मुरली प्रश्न हैं। नए प्रश्न उनके बाद जुड़ेंगे।`)}</p>
         )}
         {error && <p className="err">{t(error)}</p>}
-        <button className="btn" onClick={() => setConfirm(true)} disabled={!okDate || busy || !picks.length}>
+        <button
+          className="btn"
+          onClick={() => (okDate ? setConfirm(true) : setTried(true))}
+          disabled={busy || !picks.length}
+        >
           <Icon name="check" size={20} />
           {t('प्रकाशित करें')} ({picks.length})
         </button>
