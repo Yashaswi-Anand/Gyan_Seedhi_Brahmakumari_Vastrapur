@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
+import DailyChart from '@/components/results/DailyChart';
 import DayResultCard from '@/components/results/DayResultCard';
 import ResultsSummary from '@/components/results/ResultsSummary';
 import Leaderboard from '@/components/teacher/Leaderboard';
@@ -88,6 +89,8 @@ function MyResults() {
         </div>
 
         <ResultsSummary plays={plays} />
+
+        <DailyChart plays={plays} />
 
         {plays.some(hasAnswers) && <p className="note anshint">{t('पिछले 7 दिनों के कार्ड पर टैप करके उस दिन के उत्तर देखें।')}</p>}
 
