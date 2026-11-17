@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import AnswerFeedback from '@/components/quiz/AnswerFeedback';
 import Lifelines from '@/components/quiz/Lifelines';
@@ -50,6 +50,20 @@ function Quiz({ questions, practice }) {
     navigate('/result', { replace: true });
   };
 
+  // chart question: saving the marks goes straight to the next question (or the result)
+  const advance = useRef(false);
+  const submitSelf = () => {
+    if (q.done || q.sv == null) return;
+    advance.current = true;
+    actions.lock();
+  };
+  useEffect(() => {
+    if (!advance.current || !q.done) return;
+    advance.current = false;
+    if (isLast) finish();
+    else actions.next();
+  }, [q.done]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <>
       <QuizHeader index={game.i} total={game.qs.length} timeLeft={timeLeft} onClose={actions.quitAsk} />
@@ -83,17 +97,26 @@ function Quiz({ questions, practice }) {
       {isMatch ? (
         <MatchBoard question={question} state={q} onLeft={actions.matchLeft} onRight={actions.matchRight} />
       ) : isSelf ? (
-        <SelfScoreInput state={q} onChange={actions.selfInput} onSubmit={actions.lock} />
+        <SelfScoreInput state={q} onChange={actions.selfInput} onSubmit={submitSelf} />
       ) : (
         <OptionList question={question} state={q} onPick={actions.pick} />
       )}
 
       {q.msg && !q.done && <div className="msg">{t(q.msg)}</div>}
 
-      {!q.done && !isMatch && (
+      {!q.done && !isMatch && !isSelf && (
         <div className="lockrow">
-          <button className="btn" onClick={actions.lock} disabled={isSelf ? q.sv == null : q.sel == null}>
+          <button className="btn" onClick={actions.lock} disabled={q.sel == null}>
             {t('उत्तर पक्का करें')}
+          </button>
+        </div>
+      )}
+
+      {/* chart: no lock step; the next button saves the marks and moves on */}
+      {!q.done && isSelf && (
+        <div className="lockrow">
+          <button className="btn" onClick={submitSelf} disabled={q.sv == null}>
+            {t(isLast ? 'परिणाम देखें' : 'अगला प्रश्न')}
           </button>
         </div>
       )}
