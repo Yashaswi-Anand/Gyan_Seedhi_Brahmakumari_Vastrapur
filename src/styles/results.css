@@ -278,7 +278,7 @@
 .ans .more .mq { display: block; margin-bottom: 4px; color: var(--ink); font-weight: 600; }
 .note.anshint { margin: 0; }
 
-/* ---------- per-day chart: Murli and Chart bars side by side, a line over each colour's tops ---------- */
+/* ---------- per-day chart: Murli and Chart bars side by side ---------- */
 .dchart {
   padding: 14px 14px 10px;
   border-radius: 18px;
@@ -364,20 +364,6 @@
 .dchart .selbg {
   fill: var(--red-soft);
   opacity: 0.6;
-}
-.dchart .bar {
-  opacity: 0.45;
-}
-.dchart .ln {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 2;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-.dchart .dot {
-  stroke: var(--paper);
-  stroke-width: 2;
 }
 .dchart .hit {
   fill: transparent;

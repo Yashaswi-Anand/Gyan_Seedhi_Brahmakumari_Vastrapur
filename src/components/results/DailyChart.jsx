@@ -10,7 +10,7 @@ const MURLI = "#C2455A";
 const CHART = "#C9973B";
 
 const H = 170; // plot height
-const TOP = 12; // room above the tallest bar for its dot
+const TOP = 12; // room above the tallest bar
 const BOTTOM = 34; // x labels
 const YW = 28; // fixed y-label column
 const LEFT = 4; // left padding inside the scrolling plot
@@ -28,8 +28,8 @@ function barPath(x, top, w, base) {
 }
 
 /**
- * Results tab: Murli and Chart points of every day as two bars side by side, with a line
- * joining the top of every bar. Tap a day to see its numbers.
+ * Results tab: Murli and Chart points of every day as two bars side by side.
+ * Tap a day to see its numbers.
  * @param plays plays of the selected period (any order)
  */
 export default function DailyChart({ plays }) {
@@ -76,9 +76,6 @@ export default function DailyChart({ plays }) {
   const mx = (i) => cx(i) - GAP / 2 - BAR; // murli bar left edge
   const chx = (i) => cx(i) + GAP / 2; // chart bar left edge
 
-  const pts = days
-    .map((p, i) => `${mx(i) + BAR / 2},${y(murliPts(p))} ${chx(i) + BAR / 2},${y(chartPts(p))}`)
-    .join(" ");
   const si = Math.min(sel, days.length - 1);
   const s = days[si];
   const sd = parseDateKey(s.date);
@@ -176,27 +173,6 @@ export default function DailyChart({ plays }) {
                   d={barPath(chx(i), y(chartPts(p)), BAR, base)}
                   fill={CHART}
                   className="bar"
-                />
-              </g>
-            ))}
-
-            {/* one line joining the top of every bar, left to right (Murli, Chart, next day…) */}
-            <polyline points={pts} className="ln" />
-            {days.map((p, i) => (
-              <g key={`d${p.date}`}>
-                <circle
-                  cx={mx(i) + BAR / 2}
-                  cy={y(murliPts(p))}
-                  r="4"
-                  fill={MURLI}
-                  className="dot"
-                />
-                <circle
-                  cx={chx(i) + BAR / 2}
-                  cy={y(chartPts(p))}
-                  r="4"
-                  fill={CHART}
-                  className="dot"
                 />
               </g>
             ))}
