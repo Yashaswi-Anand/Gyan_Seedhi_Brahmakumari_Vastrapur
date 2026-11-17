@@ -77,7 +77,7 @@ export async function translateQuestion(body, { apiKey, dev = false } = {}) {
     },
     { model },
   );
-  await recordUsage(model, usageOf(data), { dev });
+  await recordUsage(data.modelUsed || model, usageOf(data), { dev });
 
   const parts = partsOf(data);
   const reason = stopReason(data, parts);

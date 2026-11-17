@@ -49,3 +49,12 @@ export function serverErrorMessage(err) {
       return 'कुछ गड़बड़ हुई। फिर से कोशिश करें।';
   }
 }
+
+const FRIENDLY = new Set(['no_key', 'offline', 'weekly_limit', 'busy', 'too_large', 'cut_off']);
+
+/** The technical reason behind the general "something went wrong" message, shown small so the cause is visible. */
+export function serverErrorDetail(err) {
+  if (!err || FRIENDLY.has(err.code)) return '';
+  const msg = err.message && err.message !== 'request_failed' ? err.message : '';
+  return [err.code, msg].filter(Boolean).join(': ');
+}

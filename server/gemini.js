@@ -29,9 +29,8 @@ function httpError(status, body) {
   return new ApiError(502, 'api_error', `Gemini request failed (${status}).`);
 }
 
-/** POST models/{model}:generateContent. Returns the parsed response. */
-export async function generateContent(apiKey, body, { model = modelName() } = {}) {
-  if (!apiKey) throw NO_KEY();
+/** One generateContent call. Returns { res, data }; drops the thinking level if the model refuses it. */
+async function postGenerate(apiKey, body, model) {
   let res;
   try {
     res = await fetch(`${BASE}/models/${encodeURIComponent(model)}:generateContent`, {
@@ -48,7 +47,88 @@ export async function generateContent(apiKey, body, { model = modelName() } = {}
   // a model that doesn't take this thinking level: ask again with its default thinking
   if (res.status === 400 && body.generationConfig?.thinkingConfig && /thinking/i.test(data?.error?.message || '')) {
     const { thinkingConfig: _drop, ...generationConfig } = body.generationConfig;
-    return generateContent(apiKey, { ...body, generationConfig }, { model });
+    return postGenerate(apiKey, { ...body, generationConfig }, model);
+  }
+  return { res, data };
+}
+
+/* When the chosen model is down (503 / 500 / 504) or gone (404), another Gemini model the key
+   can use answers instead, and is remembered for a while so the next calls go straight to it. */
+const UNAVAILABLE = new Set([404, 500, 503, 504]);
+const FALLBACK_TTL_MS = 30 * 60 * 1000;
+const MAX_FALLBACKS = 3;
+let fallback = null; // { from, model, until }
+let modelList = null; // { names, until }
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Text-chat Gemini models this key can call, best first (newest version, flash before pro, stable before preview). */
+async function fallbackModels(apiKey, exclude) {
+  if (!modelList || modelList.until < Date.now()) {
+    let names = [];
+    try {
+      const res = await fetch(`${BASE}/models?pageSize=1000`, {
+        headers: { 'x-goog-api-key': apiKey },
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await res.json().catch(() => ({}));
+      names = (data.models || [])
+        .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map((m) => String(m.name || '').replace(/^models\//, ''))
+        .filter((n) => /^gemini-\d/.test(n) && !/image|tts|audio|live|embed|vision|robotic|computer|nano|aqa|learnlm|exp/i.test(n));
+    } catch (err) {
+      console.error('Gemini model list failed', err);
+    }
+    const version = (n) => parseFloat(n.match(/^gemini-(\d+(?:\.\d+)?)/)?.[1] || '0');
+    const rank = (n) => (/flash/.test(n) ? 0 : /pro/.test(n) ? 1 : 2) + (/lite/.test(n) ? 1 : 0) + (/preview/.test(n) ? 0.5 : 0);
+    names.sort((a, b) => version(b) - version(a) || rank(a) - rank(b) || a.localeCompare(b));
+    modelList = { names, until: Date.now() + (names.length ? FALLBACK_TTL_MS : 60000) };
+  }
+  const extra = (process.env.GEMINI_FALLBACK_MODEL || '').trim();
+  return [...new Set([extra, ...modelList.names].filter((n) => n && n !== exclude))];
+}
+
+/**
+ * POST models/{model}:generateContent. Returns the parsed response, with `modelUsed` set to the
+ * model that answered (it differs from `model` when that one was unavailable).
+ */
+export async function generateContent(apiKey, body, { model = modelName() } = {}) {
+  if (!apiKey) throw NO_KEY();
+  const sticky = fallback && fallback.from === model && fallback.until > Date.now() ? fallback.model : null;
+  const tried = new Set();
+  const attempt = async (m) => {
+    tried.add(m);
+    const out = await postGenerate(apiKey, body, m);
+    if (out.res.ok) out.data.modelUsed = m;
+    return out;
+  };
+
+  let { res, data } = await attempt(sticky || model);
+  if (sticky && !res.ok && UNAVAILABLE.has(res.status)) {
+    fallback = null; // the remembered model is down too: start again from the chosen one
+    ({ res, data } = await attempt(model));
+  }
+  // a short hiccup: one quick retry on the chosen model
+  if (!res.ok && [500, 503, 504].includes(res.status)) {
+    await sleep(1500);
+    ({ res, data } = await attempt(model));
+  }
+  if (!res.ok && UNAVAILABLE.has(res.status)) {
+    const firstError = { status: res.status, data };
+    console.error('Gemini model unavailable', model, res.status, data?.error?.message);
+    for (const m of (await fallbackModels(apiKey, model)).filter((n) => !tried.has(n)).slice(0, MAX_FALLBACKS)) {
+      ({ res, data } = await attempt(m));
+      if (res.ok) {
+        console.warn(`Gemini: ${model} unavailable, answered with ${m}`);
+        fallback = { from: model, model: m, until: Date.now() + FALLBACK_TTL_MS };
+        break;
+      }
+      if (!UNAVAILABLE.has(res.status)) break; // a real error from this model: report it
+    }
+    // no model could answer: say so as "busy" (try again in a minute), not as a general error
+    if (!res.ok && UNAVAILABLE.has(res.status)) {
+      throw new ApiError(503, 'busy', `Gemini is unavailable right now (${firstError.status}).`);
+    }
   }
   if (!res.ok) {
     console.error('Gemini error', res.status, data?.error?.message);

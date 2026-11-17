@@ -3,7 +3,7 @@ import Icon from '@/components/common/Icon';
 import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
 import { CANCELLED, applyProposal, checkOffer, checkProposal, numberQuestions, offerResult, runListQuestions } from '@/services/qaTools';
-import { postJson, serverErrorMessage } from '@/services/serverApi';
+import { postJson, serverErrorDetail, serverErrorMessage } from '@/services/serverApi';
 import { formatDateKey, todayKey } from '@/utils/date';
 import OfferCard from './OfferCard';
 import ProposalCard from './ProposalCard';
@@ -68,6 +68,7 @@ export default function QaChat({ questions }) {
   questionsRef.current = questions;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [errorDetail, setErrorDetail] = useState(''); // technical reason, for the general error
   const [input, setInput] = useState('');
   const numbers = useMemo(() => numberQuestions(questions), [questions]);
   const [budget, setBudget] = useState(null); // this week's usage vs the weekly limit
@@ -215,6 +216,7 @@ ${m.text}`,
   async function runTurns(start) {
     setBusy(true);
     setError('');
+    setErrorDetail('');
     let cur = start;
     try {
       for (let step = 0; step < MAX_STEPS; step++) {
@@ -235,6 +237,7 @@ ${m.text}`,
     } catch (err) {
       if (err.code === 'weekly_limit') setBudget((b) => (b ? { ...b, reached: true, warn: true } : b));
       setError(serverErrorMessage(err));
+      setErrorDetail(serverErrorDetail(err));
     } finally {
       setBusy(false);
     }
@@ -288,6 +291,7 @@ ${m.text}`,
   const newChat = () => {
     if (busy) return;
     setError('');
+    setErrorDetail('');
     commit(EMPTY);
   };
 
@@ -416,6 +420,7 @@ ${m.text}`,
         {error && (
           <div className="msg qc-error">
             {t(error)}
+            {errorDetail && <small className="qc-error-detail">{errorDetail}</small>}
             {!busy && (lastIsUser || readyToContinue) && (
               <button className="link" onClick={() => runTurns(readyToContinue ? withToolResults(chatRef.current) : chatRef.current)}>
                 {t('फिर से कोशिश करें')}

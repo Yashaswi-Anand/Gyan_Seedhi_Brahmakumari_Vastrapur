@@ -282,7 +282,7 @@ export async function qaChatTurn(body, { apiKey, dev = false } = {}) {
     },
     { model },
   );
-  await recordUsage(model, usageOf(data), { dev });
+  await recordUsage(data.modelUsed || model, usageOf(data), { dev });
   let budget = null;
   try {
     budget = await budgetStatus({ dev }); // lets the chat warn near the weekly limit

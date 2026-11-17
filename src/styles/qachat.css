@@ -139,6 +139,12 @@
 .qc-error .link {
   padding: 0;
 }
+.qc-error-detail {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  opacity: 0.75;
+  word-break: break-word;
+}
 
 /* proposal cards */
 .proposal {
