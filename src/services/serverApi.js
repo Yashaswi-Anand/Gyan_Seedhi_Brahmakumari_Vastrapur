@@ -50,7 +50,7 @@ export function serverErrorMessage(err) {
   }
 }
 
-const FRIENDLY = new Set(['no_key', 'offline', 'weekly_limit', 'busy', 'too_large', 'cut_off']);
+const FRIENDLY = new Set(['no_key', 'offline', 'weekly_limit', 'too_large', 'cut_off']);
 
 /** The technical reason behind the general "something went wrong" message, shown small so the cause is visible. */
 export function serverErrorDetail(err) {
