@@ -1,0 +1,8 @@
+{
+  "name": "gyan-seedhi-poller",
+  "private": true,
+  "type": "module",
+  "description": "Answers the Gyan Seedhi AI chat with Claude Code CLI on the VPS (Claude Max plan)",
+  "scripts": { "start": "node poller.mjs" },
+  "dependencies": { "firebase-admin": "^13.10.0" }
+}

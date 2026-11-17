@@ -1,13 +1,16 @@
 /* Calls our own server endpoints (/api/*), which talk to Gemini. The API key stays on
    the server. Long calls stream a JSON body; errors come back as { error, message }. */
 
-export async function postJson(path, payload) {
+/** GET a JSON answer from our own endpoints (same error rules as postJson). */
+export const getJson = (path) => postJson(path, undefined, 'GET');
+
+export async function postJson(path, payload, method = 'POST') {
   let res;
   try {
     res = await fetch(path, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
+      method,
+      headers: method === 'GET' ? {} : { 'content-type': 'application/json' },
+      body: method === 'GET' ? undefined : JSON.stringify(payload),
     });
   } catch {
     const err = new Error('offline');
@@ -41,6 +44,12 @@ export function serverErrorMessage(err) {
       return 'इस सप्ताह की AI सीमा पूरी हो गई। सेटिंग्स में सीमा बढ़ाएँ या अगले सोमवार तक रुकें।';
     case 'busy':
       return 'अभी बहुत अनुरोध हैं। एक मिनट बाद फिर कोशिश करें।';
+    case 'ai_offline':
+      return 'AI कंप्यूटर (VPS) अभी जुड़ा नहीं है। थोड़ी देर बाद फिर कोशिश करें।';
+    case 'ai_timeout':
+      return 'AI ने 5 मिनट में जवाब नहीं दिया। फिर से कोशिश करें।';
+    case 'daily_limit':
+      return 'आज की AI सीमा पूरी हो गई। कल फिर कोशिश करें।';
     case 'too_large':
       return 'संदेश बहुत लंबा है। थोड़ा छोटा करके भेजें।';
     case 'cut_off':
@@ -50,7 +59,7 @@ export function serverErrorMessage(err) {
   }
 }
 
-const FRIENDLY = new Set(['no_key', 'offline', 'weekly_limit', 'too_large', 'cut_off']);
+const FRIENDLY = new Set(['no_key', 'offline', 'weekly_limit', 'too_large', 'cut_off', 'ai_offline', 'ai_timeout', 'daily_limit']);
 
 /** The technical reason behind the general "something went wrong" message, shown small so the cause is visible. */
 export function serverErrorDetail(err) {

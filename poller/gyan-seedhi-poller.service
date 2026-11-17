@@ -1,0 +1,19 @@
+[Unit]
+Description=Gyan Seedhi AI chat poller - Claude Max on this VPS
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=radhikas
+WorkingDirectory=/home/radhikas/gyan-seedhi/poller
+# GOOGLE_APPLICATION_CREDENTIALS, CLAUDE_CODE_OAUTH_TOKEN, CLAUDE_MODEL, POLLER_CONCURRENCY
+EnvironmentFile=/home/radhikas/.config/gyan-seedhi/poller.env
+Environment=HOME=/home/radhikas
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/node /home/radhikas/gyan-seedhi/poller/poller.mjs
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

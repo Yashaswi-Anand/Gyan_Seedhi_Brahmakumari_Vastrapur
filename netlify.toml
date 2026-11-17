@@ -9,9 +9,13 @@
 # Serverless functions (/api/qa-chat, /api/translate, /api/settings, /api/murli).
 # Needs GEMINI_API_KEY set in Site configuration → Environment variables
 # (optional GEMINI_MODEL to use another Gemini model).
+# AI chat with Claude on the VPS instead: AI_PROVIDER=claude-vps + FIREBASE_SERVICE_ACCOUNT
+# (optional AI_DAILY_TURNS, default 400). See poller/README.md.
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  # loaded only when AI_PROVIDER=claude-vps (the AI chat answered by Claude on the VPS, see poller/README.md)
+  external_node_modules = ["firebase-admin"]
 
 # Hashed asset files never change, so let browsers cache them for a year
 [[headers]]

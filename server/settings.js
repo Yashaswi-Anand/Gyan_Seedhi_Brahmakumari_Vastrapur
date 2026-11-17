@@ -21,6 +21,8 @@ function status(s, envKey) {
     last4: last4(s.geminiKey || envKey),
     pinSet: !!s.pinHash,
     updatedAt: s.updatedAt || null,
+    // which AI answers the chat: 'claude-vps' (Claude on the VPS) or 'gemini'
+    provider: String(process.env.AI_PROVIDER || '').toLowerCase() === 'claude-vps' ? 'claude-vps' : 'gemini',
   };
 }
 

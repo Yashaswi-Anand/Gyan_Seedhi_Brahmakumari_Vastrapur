@@ -22,7 +22,12 @@ function serverApiForDev(env) {
           try {
             const chunks = [];
             for await (const c of req) chunks.push(c);
-            const request = new Request(`http://localhost${route}`, {
+            // the VPS-queue settings (AI_PROVIDER, FIREBASE_SERVICE_ACCOUNT …) come from .env.local in dev
+            for (const k of ['AI_PROVIDER', 'FIREBASE_SERVICE_ACCOUNT', 'FIRESTORE_EMULATOR_HOST', 'FIREBASE_PROJECT_ID', 'AI_DAILY_TURNS']) {
+              if (env[k] && !process.env[k]) process.env[k] = env[k];
+            }
+            const query = req.url && req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+            const request = new Request(`http://localhost${route}${query}`, {
               method: req.method,
               headers: { 'content-type': 'application/json' },
               body: req.method === 'POST' ? Buffer.concat(chunks) : undefined,

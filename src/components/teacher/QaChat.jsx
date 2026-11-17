@@ -3,7 +3,7 @@ import Icon from '@/components/common/Icon';
 import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
 import { CANCELLED, applyProposal, checkOffer, checkProposal, numberQuestions, offerResult, runListQuestions } from '@/services/qaTools';
-import { postJson, serverErrorDetail, serverErrorMessage } from '@/services/serverApi';
+import { getJson, postJson, serverErrorDetail, serverErrorMessage } from '@/services/serverApi';
 import { formatDateKey, todayKey } from '@/utils/date';
 import OfferCard from './OfferCard';
 import ProposalCard from './ProposalCard';
@@ -58,7 +58,41 @@ function RichText({ text }) {
   ));
 }
 
-/** Teacher's Q/A chat: one instruction, Gemini does the work, the teacher approves each change. */
+const JOB_POLL_MS = 2000;
+const JOB_WAIT_MS = 5 * 60 * 1000; // a turn that is not answered in 5 minutes is given up
+
+/** Waits for a turn queued for Claude on the VPS. Returns { content, stop_reason } like a direct answer. */
+async function waitForJob(job, onQueued) {
+  const started = Date.now();
+  let misses = 0;
+  try {
+    while (Date.now() - started < JOB_WAIT_MS) {
+      await new Promise((r) => setTimeout(r, JOB_POLL_MS));
+      let st;
+      try {
+        st = await getJson(`/api/qa-chat?job=${job}`);
+        misses = 0;
+      } catch (err) {
+        if (err.code === 'offline' && ++misses < 5) continue; // a short network drop: keep waiting
+        throw err;
+      }
+      onQueued(st.status === 'pending');
+      if (st.status === 'done') return st;
+      if (st.status === 'error') {
+        const err = new Error(st.message || st.error);
+        err.code = st.error || 'ai_failed';
+        throw err;
+      }
+    }
+  } finally {
+    onQueued(false);
+  }
+  const err = new Error('timeout');
+  err.code = 'ai_timeout';
+  throw err;
+}
+
+/** Teacher's Q/A chat: one instruction, the AI (Gemini, or Claude on the VPS) does the work, the teacher approves each change. */
 export default function QaChat({ questions }) {
   const { t, cal } = useLang();
   const { reload } = useQuestions();
@@ -72,6 +106,8 @@ export default function QaChat({ questions }) {
   const [input, setInput] = useState('');
   const numbers = useMemo(() => numberQuestions(questions), [questions]);
   const [budget, setBudget] = useState(null); // this week's usage vs the weekly limit
+  const [aiName, setAiName] = useState('Gemini'); // 'Claude' when the turns go to the VPS (AI_PROVIDER=claude-vps)
+  const [queued, setQueued] = useState(false); // the VPS has not picked the turn up yet
 
   useEffect(() => {
     const last = lastToolUses(chatRef.current);
@@ -83,7 +119,10 @@ export default function QaChat({ questions }) {
 
   useEffect(() => {
     postJson('/api/settings', { action: 'status' })
-      .then((st) => setBudget(st.budget || null))
+      .then((st) => {
+        setBudget(st.budget || null);
+        if (st.provider === 'claude-vps') setAiName('Claude');
+      })
       .catch(() => {});
   }, []);
 
@@ -220,7 +259,12 @@ ${m.text}`,
     let cur = start;
     try {
       for (let step = 0; step < MAX_STEPS; step++) {
-        const data = await postJson('/api/qa-chat', { messages: cur.messages, today: todayKey() });
+        let data = await postJson('/api/qa-chat', { messages: cur.messages, today: todayKey() });
+        if (data.job) {
+          // Claude on the VPS: the turn is queued; wait for its answer
+          setAiName('Claude');
+          data = await waitForJob(data.job, setQueued);
+        }
         if (data.budget) setBudget(data.budget);
         cur = addAssistant(cur, data.content || []);
         commit(cur);
@@ -299,7 +343,7 @@ ${m.text}`,
     <div className="qachat">
       <div className="qc-bar">
         <span className="qc-model">
-          <Icon name="star" size={16} /> Gemini
+          <Icon name="star" size={16} /> {aiName}
         </span>
         <button className="link" onClick={newChat} disabled={busy || !chat.messages.length}>
           + {t('नई चैट')}
@@ -414,7 +458,9 @@ ${m.text}`,
               <i />
               <i />
             </span>
-            {t('Gemini काम कर रहा है…')}
+            {aiName === 'Claude'
+              ? t(queued ? 'Claude के लिए कतार में…' : 'Claude काम कर रहा है…')
+              : t('Gemini काम कर रहा है…')}
           </div>
         )}
         {error && (
