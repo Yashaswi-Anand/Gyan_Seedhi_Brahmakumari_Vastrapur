@@ -86,6 +86,8 @@ function Quiz({ questions, practice }) {
         onHint={actions.hint}
       />
 
+      {/* keyed by question: each new question slides in */}
+      <div key={game.i} className="qslide">
       <QuestionCard question={question} />
 
       {q.hint && (
@@ -131,8 +133,9 @@ function Quiz({ questions, practice }) {
           </div>
         </>
       )}
+      </div>
 
-      {quit && <QuitSheet onStay={actions.quitNo} onQuit={() => navigate('/', { replace: true })} />}
+      {quit &&<QuitSheet onStay={actions.quitNo} onQuit={() => navigate('/', { replace: true })} />}
     </>
   );
 }

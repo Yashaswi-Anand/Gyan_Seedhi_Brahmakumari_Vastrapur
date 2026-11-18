@@ -4,6 +4,7 @@ import Icon from '@/components/common/Icon';
 import PointsSplit from '@/components/common/PointsSplit';
 import TopBar from '@/components/common/TopBar';
 import AnswerList from '@/components/results/AnswerList';
+import Celebration from '@/components/results/Celebration';
 import GrowthTree from '@/components/tree/GrowthTree';
 import WheelBlock from '@/components/wheel/WheelBlock';
 import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
@@ -49,7 +50,13 @@ export default function ResultPage() {
   return (
     <>
       <TopBar title="आज का परिणाम" logo lang={false} />
+      <Celebration />
       <div className="pad stack" style={{ gap: 18 }}>
+        <div className="congrats" role="status">
+          <h2>{t('बधाई हो!')}</h2>
+          <p>{t(R.practice ? 'अभ्यास पूरा हुआ' : 'आज का अभ्यास पूरा हुआ')}</p>
+        </div>
+
         <div className="hero2 one">
           <p className="eyebrow">{t(R.practice ? 'अभ्यास (अंक नहीं जुड़े)' : 'आज के अंक')}</p>
           <h2 className="hbig">
@@ -58,6 +65,19 @@ export default function ResultPage() {
           <p className="hsub">{firstLine}</p>
           <PointsSplit murli={R.mp} chart={R.sp} murliMax={R.qn * PERQ} chartMax={R.sn * PERQ} />
         </div>
+
+        {/* the leaf for today grows onto the tree */}
+        {R.saved && (
+          <div className="card treecard newleaf">
+            <div className="treebox md">
+              <GrowthTree leaves={leaves} fresh={leaves - 1} />
+            </div>
+            <div>
+              <b style={{ fontSize: 19 }}>{t('वृक्ष पर नया पत्ता जुड़ा')}</b>
+              <p className="muted small">{t(`${treeStage(leaves)} · ${leaves} / ${daysInMonth()} पत्ते`)}</p>
+            </div>
+          </div>
+        )}
 
         <div className="tiles two" style={{ margin: 0 }}>
           <div className="tile">
@@ -71,18 +91,6 @@ export default function ResultPage() {
         </div>
 
         {!R.practice && <WheelBlock />}
-
-        {R.saved && (
-          <div className="card treecard">
-            <div className="treebox sm">
-              <GrowthTree leaves={leaves} fresh={leaves - 1} />
-            </div>
-            <div>
-              <b style={{ fontSize: 19 }}>{t('वृक्ष पर नया पत्ता जुड़ा')}</b>
-              <p className="muted small">{t(`${treeStage(leaves)} · ${leaves} / ${daysInMonth()} पत्ते`)}</p>
-            </div>
-          </div>
-        )}
 
         {R.newB.length > 0 && (
           <div className="card stack" style={{ gap: 8 }}>

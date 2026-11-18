@@ -547,5 +547,8 @@
   "Claude काम कर रहा है…": "Claude is working…",
   "AI कंप्यूटर (VPS) अभी जुड़ा नहीं है। थोड़ी देर बाद फिर कोशिश करें।": "The AI computer (VPS) is not connected right now. Please try again in a little while.",
   "AI ने 5 मिनट में जवाब नहीं दिया। फिर से कोशिश करें।": "The AI did not answer within 5 minutes. Please try again.",
-  "आज की AI सीमा पूरी हो गई। कल फिर कोशिश करें।": "Today's AI limit is used up. Please try again tomorrow."
+  "आज की AI सीमा पूरी हो गई। कल फिर कोशिश करें।": "Today's AI limit is used up. Please try again tomorrow.",
+  "बधाई हो!": "Congratulations!",
+  "आज का अभ्यास पूरा हुआ": "Today's practice is complete",
+  "अभ्यास पूरा हुआ": "Practice complete"
 }

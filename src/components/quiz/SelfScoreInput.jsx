@@ -14,7 +14,6 @@ export default function SelfScoreInput({ state, onChange, onSubmit }) {
           inputMode="numeric"
           maxLength={2}
           autoComplete="off"
-          placeholder="0–20"
           value={state.sraw}
           className={state.sv != null ? 'on' : undefined}
           disabled={state.done}

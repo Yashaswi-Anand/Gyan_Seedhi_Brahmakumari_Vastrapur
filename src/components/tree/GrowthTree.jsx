@@ -47,7 +47,7 @@ export default function GrowthTree({ leaves, total = daysInMonth(), fresh = -1 }
       {layout(total).map((L, i) => {
         const isFresh = i === fresh;
         const fill = isFresh ? GOLD : i < lit ? (i % 3 ? '#C2455A' : '#E9A8B0') : '#F8E3E4';
-        return (
+        const leaf = (
           <ellipse
             key={i}
             cx={L.x}
@@ -56,8 +56,16 @@ export default function GrowthTree({ leaves, total = daysInMonth(), fresh = -1 }
             ry={small ? 4.6 : 4.8}
             transform={`rotate(${L.rot} ${L.x} ${L.y})`}
             fill={fill}
-            className={isFresh ? 'fresh' : undefined}
           />
+        );
+        if (!isFresh) return leaf;
+        // the new leaf: an empty spot first, then the leaf grows in with a golden ring
+        return (
+          <g key={i}>
+            <ellipse cx={L.x} cy={L.y} rx={small ? 7.6 : 8} ry={small ? 4.6 : 4.8} transform={`rotate(${L.rot} ${L.x} ${L.y})`} fill="#F8E3E4" />
+            <g className="fresh">{leaf}</g>
+            <circle className="leafring" cx={L.x} cy={L.y} r="9" fill="none" stroke={GOLD} strokeWidth="2" />
+          </g>
         );
       })}
       {lit >= total && FRUITS.map(([cx, cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="5" fill={GOLD} />)}
