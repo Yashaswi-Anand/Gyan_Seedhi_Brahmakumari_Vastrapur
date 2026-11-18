@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Avatar from '@/components/common/Avatar';
 import Icon from '@/components/common/Icon';
 import InstallAppCard from '@/components/common/InstallAppCard';
 import LanguageSwitch from '@/components/common/LanguageSwitch';
@@ -78,10 +79,15 @@ export default function HomePage() {
             {t(`${st.cur} दिन`)}
           </span>
         </div>
-        <h2>
-          {t('ओम शान्ति, ')}
-          {tn(user.name)}
-        </h2>
+        <div className="hello-name">
+          <button type="button" className="avlink" onClick={() => navigate('/profile')} aria-label={t('मेरी प्रोफ़ाइल')}>
+            <Avatar photo={user.photo} name={tn(user.name)} size={46} />
+          </button>
+          <h2>
+            {t('ओम शान्ति, ')}
+            {tn(user.name)}
+          </h2>
+        </div>
       </div>
 
       <div className="hero2">

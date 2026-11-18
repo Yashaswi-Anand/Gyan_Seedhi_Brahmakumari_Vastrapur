@@ -131,14 +131,24 @@ export function AppProvider({ children }) {
     [updateUser],
   );
 
+  /** Profile photo as a small data URL (kept on this phone with the profile); null removes it. */
+  const setPhoto = useCallback(
+    (photo) =>
+      updateUser((u) => {
+        const { photo: _old, ...rest } = u;
+        return photo ? { ...rest, photo } : rest;
+      }),
+    [updateUser],
+  );
+
   const recordSpin = useCallback(
     (idx) => updateUser((u) => ({ ...u, spins: { ...u.spins, [todayKey()]: idx } })),
     [updateUser],
   );
 
   const value = useMemo(
-    () => ({ db, user, isTeacher, login, logout, register, restore, openDemo, addPlay, recordSpin, lastQuiz, setLastQuiz }),
-    [db, user, isTeacher, login, logout, register, restore, openDemo, addPlay, recordSpin, lastQuiz],
+    () => ({ db, user, isTeacher, login, logout, register, restore, openDemo, addPlay, recordSpin, setPhoto, lastQuiz, setLastQuiz }),
+    [db, user, isTeacher, login, logout, register, restore, openDemo, addPlay, recordSpin, setPhoto, lastQuiz],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

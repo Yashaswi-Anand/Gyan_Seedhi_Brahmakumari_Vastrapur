@@ -1,4 +1,6 @@
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Avatar from '@/components/common/Avatar';
 import Icon from '@/components/common/Icon';
 import TopBar from '@/components/common/TopBar';
 import GrowthTree from '@/components/tree/GrowthTree';
@@ -18,11 +20,35 @@ import {
   treeStage,
 } from '@/services/stats';
 import { sum } from '@/utils/helpers';
+import { squarePhoto } from '@/utils/image';
 
 export default function ProfilePage() {
-  const { user, logout } = useApp();
+  const { user, logout, setPhoto } = useApp();
   const { t, tn, cal } = useLang();
   const navigate = useNavigate();
+  const fileRef = useRef(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoMsg, setPhotoMsg] = useState('');
+
+  const pickPhoto = () => {
+    setPhotoMsg('');
+    fileRef.current?.click();
+  };
+
+  const onPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // the same photo can be picked again
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      setPhoto(await squarePhoto(file));
+      setPhotoMsg('');
+    } catch (err) {
+      setPhotoMsg(err?.message === 'not_image' ? 'कृपया कोई फ़ोटो चुनें।' : 'यह फ़ोटो नहीं लग पाई। कोई दूसरी फ़ोटो चुनें।');
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
 
   // points, level and accuracy count from the 1st of this month; badges and streaks are for all time
   const pts = monthPts(user);
@@ -40,13 +66,37 @@ export default function ProfilePage() {
     <>
       <TopBar title="मेरी प्रोफ़ाइल" />
       <div className="pad stack" style={{ gap: 20 }}>
-        <div className="row" style={{ gap: 16 }}>
-          <div className="avatar">{displayName.charAt(0)}</div>
-          <div>
+        <div className="row profhead" style={{ gap: 16 }}>
+          {/* tap the picture to choose a photo from the gallery or camera */}
+          <button
+            type="button"
+            className="avbtn"
+            onClick={pickPhoto}
+            disabled={photoBusy}
+            aria-label={t(user.photo ? 'फ़ोटो बदलें' : 'फ़ोटो लगाएँ')}
+          >
+            <Avatar photo={user.photo} name={displayName} size={84} />
+            <span className="avcam" aria-hidden="true">
+              <Icon name="camera" size={16} />
+            </span>
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPhoto} />
+          <div style={{ minWidth: 0 }}>
             <h2 style={{ fontSize: 24 }}>{displayName}</h2>
             <p className="muted small">
               {t('मोबाइल ') + maskedMobile}
             </p>
+            <div className="avactions">
+              <button type="button" onClick={pickPhoto} disabled={photoBusy}>
+                {t(photoBusy ? 'फ़ोटो तैयार हो रही है…' : user.photo ? 'फ़ोटो बदलें' : 'फ़ोटो लगाएँ')}
+              </button>
+              {user.photo && !photoBusy && (
+                <button type="button" className="rm" onClick={() => setPhoto(null)}>
+                  {t('फ़ोटो हटाएँ')}
+                </button>
+              )}
+            </div>
+            {photoMsg && <p className="err small" role="alert">{t(photoMsg)}</p>}
           </div>
         </div>
 

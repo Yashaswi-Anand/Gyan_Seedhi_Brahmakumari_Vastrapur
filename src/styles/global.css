@@ -682,3 +682,19 @@ body.en .hbig small{font-size:18px}
 .spark{opacity:.8}
 }
 
+
+/* profile photo */
+.avatar{overflow:hidden;flex:none;line-height:1}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.has-photo{background:var(--red-soft)}
+.avbtn{position:relative;flex:none;padding:0;border:0;background:none;border-radius:50%}
+.avbtn .avatar{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--red-soft)}
+.avbtn:disabled{opacity:.7}
+.avcam{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--gold);color:#fff;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(122,36,56,.25)}
+.avactions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.avactions button{min-height:36px;padding:4px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--red-deep);font-size:14px;font-weight:600}
+.avactions .rm{color:var(--muted)}
+.profhead .err{min-height:0;margin-top:6px}
+.hello-name{display:flex;align-items:center;gap:12px}
+.avlink{flex:none;padding:0;border:0;background:none;border-radius:50%}
+.avlink .avatar{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--red-soft)}
