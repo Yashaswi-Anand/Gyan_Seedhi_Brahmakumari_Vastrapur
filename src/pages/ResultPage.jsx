@@ -39,6 +39,7 @@ export default function ResultPage() {
   if (!lastQuiz) return <Navigate to="/" replace />;
   const { qs, res, summary: R } = lastQuiz;
   const leaves = leafCount(user);
+  const total = qs.length * PERQ;
 
   const firstLine =
     lang === 'en'
@@ -52,31 +53,47 @@ export default function ResultPage() {
       <TopBar title="आज का परिणाम" logo lang={false} />
       <Celebration />
       <div className="pad stack" style={{ gap: 18 }}>
-        <div className="congrats" role="status">
-          <h2>{t('बधाई हो!')}</h2>
-          <p>{t(R.practice ? 'अभ्यास पूरा हुआ' : 'आज का अभ्यास पूरा हुआ')}</p>
-        </div>
+        {/* congratulations and the score, every time a quiz is finished */}
+        <section className="cele" role="status">
+          <span className="spark s1"><Icon name="star" size={16} /></span>
+          <span className="spark s2"><Icon name="star" size={12} /></span>
+          <span className="spark s3"><Icon name="star" size={14} /></span>
+          <div className="cele-badge">
+            <span className="disc" />
+            <Icon name="trophy" size={40} />
+          </div>
+          <h2 className="cele-title">{t('बधाई हो!')}</h2>
+          <p className="cele-sub">{t(R.practice ? 'अभ्यास पूरा हुआ' : 'आज का अभ्यास पूरा हुआ')}</p>
 
-        <div className="hero2 one">
-          <p className="eyebrow">{t(R.practice ? 'अभ्यास (अंक नहीं जुड़े)' : 'आज के अंक')}</p>
-          <h2 className="hbig">
-            <span>{shown}</span> <small>/ {qs.length * PERQ}</small>
-          </h2>
-          <p className="hsub">{firstLine}</p>
+          <div className="cele-score">
+            <p className="eyebrow">{t(R.practice ? 'अभ्यास (अंक नहीं जुड़े)' : 'आज के अंक')}</p>
+            <p className="cele-num">
+              <b>{shown}</b> <small>/ {total}</small>
+            </p>
+            <div className="cele-bar" aria-hidden="true">
+              <i style={{ '--w': `${Math.round((R.tot / total) * 100)}%` }} />
+            </div>
+            <p className="hsub">{firstLine}</p>
+          </div>
           <PointsSplit murli={R.mp} chart={R.sp} murliMax={R.qn * PERQ} chartMax={R.sn * PERQ} />
-        </div>
+        </section>
 
-        {/* the leaf for today grows onto the tree */}
-        {R.saved && (
-          <div className="card treecard newleaf">
-            <div className="treebox md">
+        {/* the tree with today's leaf growing on, every time */}
+        {leaves > 0 && (
+          <section className="leafcard">
+            <div className="leaf-tree">
+              <span className="leaf-glow" />
               <GrowthTree leaves={leaves} fresh={leaves - 1} />
             </div>
-            <div>
-              <b style={{ fontSize: 19 }}>{t('वृक्ष पर नया पत्ता जुड़ा')}</b>
-              <p className="muted small">{t(`${treeStage(leaves)} · ${leaves} / ${daysInMonth()} पत्ते`)}</p>
+            <h3>{t(R.saved ? 'वृक्ष पर नया पत्ता जुड़ा' : 'आज का पत्ता आपके वृक्ष पर है')}</h3>
+            <p className="leaf-stage">
+              <span className="chip">{t(treeStage(leaves))}</span>
+              <span>{t(`${leaves} / ${daysInMonth()} पत्ते`)}</span>
+            </p>
+            <div className="leaf-bar" aria-hidden="true">
+              <i style={{ '--from': `${((leaves - 1) / daysInMonth()) * 100}%`, '--to': `${(leaves / daysInMonth()) * 100}%` }} />
             </div>
-          </div>
+          </section>
         )}
 
         <div className="tiles two" style={{ margin: 0 }}>

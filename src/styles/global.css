@@ -119,10 +119,8 @@ input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-
 
 .treecard{display:flex;align-items:center;gap:14px}
 
-.treebox.md{width:150px;flex:none}
-
 /* the day's new leaf: grows in, then glows a few times */
-.fresh{transform-box:fill-box;transform-origin:center;animation:leafgrow .9s cubic-bezier(.2,.8,.3,1.4) .7s both,blink 1.1s ease-in-out 1.8s 3}
+.fresh{transform-box:fill-box;transform-origin:center;animation:leafgrow .9s cubic-bezier(.2,.8,.3,1.4) 1.1s both,blink 1.1s ease-in-out 2.2s 3}
 
 @keyframes leafgrow{0%{transform:scale(0);opacity:0}70%{transform:scale(1.7);opacity:1}100%{transform:scale(1);opacity:1}
 }
@@ -130,14 +128,12 @@ input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-
 @keyframes blink{50%{opacity:.3}
 }
 
-.leafring{transform-box:fill-box;transform-origin:center;opacity:0;animation:leafring 1.2s ease-out 1.1s both}
+.leafring{transform-box:fill-box;transform-origin:center;opacity:0;animation:leafring 1.2s ease-out 1.5s both}
 
 @keyframes leafring{0%{transform:scale(.3);opacity:.95}100%{transform:scale(2.6);opacity:0}
 }
 
-.newleaf{animation:cardpop .5s ease-out .4s both}
-
-@keyframes cardpop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}
+@keyframes cardpop{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}
 }
 
 /* quiz: each new question slides in from the right */
@@ -146,14 +142,94 @@ input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-
 @keyframes qin{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:none}
 }
 
-/* result: congratulations line and confetti */
-.congrats{text-align:center;animation:congrats .6s cubic-bezier(.2,.8,.3,1.3) both}
+/* result: celebration card (badge, title, score) */
+.cele{position:relative;overflow:hidden;text-align:center;padding:26px 18px 18px;border-radius:22px;border:1px solid var(--line);background:radial-gradient(120% 80% at 50% 0%,#FFFFFF 0%,var(--red-soft) 55%,var(--gold-soft) 100%);box-shadow:0 14px 34px -22px rgba(122,36,56,.55);animation:cardpop .5s ease-out both}
 
-.congrats h2{font-size:28px;line-height:1.2;font-weight:700;color:var(--red-deep);margin:0}
+.cele-badge{position:relative;width:88px;height:88px;margin:0 auto 12px;display:grid;place-items:center;color:#fff;animation:badgepop .8s cubic-bezier(.2,.9,.3,1.5) .15s both}
 
-.congrats p{font-size:15px;color:var(--muted);margin:2px 0 0}
+.cele-badge::before{content:'';position:absolute;inset:-26px;border-radius:50%;background:repeating-conic-gradient(rgba(201,151,59,.32) 0 9deg,transparent 9deg 30deg);-webkit-mask:radial-gradient(circle,#000 35%,transparent 70%);mask:radial-gradient(circle,#000 35%,transparent 70%);animation:spin 16s linear infinite}
 
-@keyframes congrats{0%{opacity:0;transform:scale(.6)}100%{opacity:1;transform:none}
+.cele-badge .disc{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 34% 28%,#F6D79A 0%,var(--gold) 55%,#9C6F22 100%);box-shadow:0 10px 22px -8px rgba(156,111,34,.75),inset 0 3px 0 rgba(255,255,255,.45),inset 0 -4px 0 rgba(0,0,0,.08)}
+
+.cele-badge svg{position:relative;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+
+@keyframes badgepop{0%{opacity:0;transform:scale(.2) rotate(-25deg)}100%{opacity:1;transform:none}
+}
+
+@keyframes spin{to{transform:rotate(360deg)}
+}
+
+.cele-title{font-size:32px;line-height:1.15;color:var(--red-deep);letter-spacing:.2px;animation:titlepop .6s cubic-bezier(.2,.9,.3,1.4) .35s both}
+
+body.en .cele-title{font-size:28px}
+
+.cele-sub{font-size:15px;color:var(--muted);margin:4px 0 0;animation:fadeup .5s ease-out .5s both}
+
+@keyframes titlepop{0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:none}
+}
+
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}
+}
+
+.cele-score{margin:16px 0 12px;padding:14px 14px 12px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(243,213,214,.9);animation:fadeup .5s ease-out .6s both}
+
+.cele-num{margin:2px 0 8px;line-height:1.1}
+
+.cele-num b{font-size:44px;font-weight:800;color:var(--red-deep);font-variant-numeric:tabular-nums}
+
+.cele-num small{font-size:20px;font-weight:500;color:var(--muted)}
+
+.cele-bar{height:8px;border-radius:99px;background:var(--red-soft);overflow:hidden;margin:0 0 8px}
+
+.cele-bar i{display:block;height:100%;width:var(--w);border-radius:99px;background:linear-gradient(90deg,var(--red),var(--gold));transform-origin:left;animation:barfill 1s cubic-bezier(.3,.7,.3,1) .7s both}
+
+@keyframes barfill{from{transform:scaleX(0)}to{transform:none}
+}
+
+.cele .ptsplit{animation:fadeup .5s ease-out .75s both}
+
+.cele .ptsplit>div{background:#fff;border:1px solid var(--line);text-align:left}
+
+.cele .ptsplit .pm{box-shadow:inset 3px 0 0 var(--red)}
+
+.cele .ptsplit .pc{box-shadow:inset 3px 0 0 var(--gold)}
+
+.spark{position:absolute;color:var(--gold);animation:twinkle 2.2s ease-in-out infinite}
+
+.spark svg{fill:currentColor}
+
+.spark.s1{top:22px;left:22%;animation-delay:.4s}
+
+.spark.s2{top:62px;right:20%;animation-delay:1.1s}
+
+.spark.s3{top:96px;left:16%;animation-delay:1.7s}
+
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(20deg)}
+}
+
+/* result: tree card with today's leaf */
+.leafcard{text-align:center;padding:18px 18px 16px;border-radius:22px;border:1px solid #DCEBDD;background:linear-gradient(180deg,#F3FAF2 0%,#FFFFFF 70%);box-shadow:0 14px 34px -24px rgba(46,125,91,.55);animation:cardpop .5s ease-out .5s both}
+
+.leaf-tree{position:relative;width:190px;margin:0 auto}
+
+.leaf-tree .tree{position:relative;width:100%;height:auto;display:block}
+
+.leaf-glow{position:absolute;left:50%;top:38%;width:170px;height:170px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(227,178,90,.38) 0%,rgba(227,178,90,0) 68%);animation:glow 2.6s ease-in-out 1.1s infinite}
+
+@keyframes glow{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}
+}
+
+.leafcard h3{font-size:20px;color:var(--good);margin-top:6px;animation:fadeup .5s ease-out 1.3s both}
+
+.leaf-stage{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 10px;font-size:14px;color:var(--muted);animation:fadeup .5s ease-out 1.4s both}
+
+.leaf-stage .chip{background:var(--good-soft);color:var(--good);border-color:transparent}
+
+.leaf-bar{position:relative;height:8px;border-radius:99px;background:#E4F1E6;overflow:hidden;max-width:260px;margin:0 auto}
+
+.leaf-bar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:linear-gradient(90deg,#7FB77E,var(--good));width:var(--from);animation:leafbar .9s cubic-bezier(.3,.7,.3,1) 1.5s forwards}
+
+@keyframes leafbar{to{width:var(--to)}
 }
 
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
@@ -602,6 +678,7 @@ body.en .hbig small{font-size:18px}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
 .leafring{display:none}
-.newleaf,.congrats,.qslide{opacity:1}
+.leaf-bar i{width:var(--to)}
+.spark{opacity:.8}
 }
 
