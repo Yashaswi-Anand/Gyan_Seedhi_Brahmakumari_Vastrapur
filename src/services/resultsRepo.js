@@ -123,6 +123,32 @@ export function rankStudents(results) {
   return rows;
 }
 
+/** How many days back a student counts as active for the "आज बाकी" (not done today) list. */
+export const ACTIVE_DAYS = 30;
+
+/**
+ * Students who practised in the given results but have no result for `today`,
+ * the most recent first: [{ mobile, name, lastDate, days }].
+ */
+export function pendingToday(results, today = todayKey()) {
+  const by = new Map();
+  for (const r of results) {
+    if (!r?.mobile || !r.date) continue;
+    const s = by.get(r.mobile) || { mobile: r.mobile, name: r.name, lastDate: '', days: 0, today: false };
+    s.days += 1;
+    if (r.date === today) s.today = true;
+    if (r.date >= s.lastDate) {
+      s.lastDate = r.date;
+      s.name = r.name;
+    }
+    by.set(r.mobile, s);
+  }
+  return [...by.values()]
+    .filter((s) => !s.today)
+    .map(({ today: _t, ...s }) => s)
+    .sort((a, b) => (a.lastDate < b.lastDate ? 1 : a.lastDate > b.lastDate ? -1 : a.name.localeCompare(b.name)));
+}
+
 /**
  * Top 3 of every finished week (Monday–Sunday) and month, newest first:
  * { weeks: [{ key, from, to, students, top }], months: [{ key, students, top }] }.
@@ -163,6 +189,7 @@ export function rangeFor(scope) {
   const today = todayKey();
   if (scope === 'week') return [weekStart(today), today];
   if (scope === 'month') return [`${today.slice(0, 7)}-01`, `${today.slice(0, 7)}-31`];
+  if (scope === 'active') return [dateKey(addDays(parseDateKey(today), -(ACTIVE_DAYS - 1))), today];
   return ['0000-01-01', '9999-12-31'];
 }
 

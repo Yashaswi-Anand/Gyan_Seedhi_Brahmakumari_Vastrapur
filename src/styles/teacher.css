@@ -1083,3 +1083,99 @@
 .qa-reused {
   margin: 4px 0 -2px;
 }
+
+/* results: all students / not done today */
+.lbfilter {
+  display: flex;
+  gap: 8px;
+}
+.lbfilter button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+.lbfilter button.on {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+.lbfilter .cnt {
+  min-width: 26px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--red-soft);
+  color: var(--red-deep);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.lbfilter button.on .cnt {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+.pend-note {
+  margin: 0;
+}
+.pend-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+.pend-row:first-child {
+  border-top: 0;
+}
+.pend-av {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold-soft);
+  color: #6b4a10;
+  font-weight: 700;
+  font-size: 17px;
+}
+.pend-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--good-soft);
+  color: var(--good);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.pend-done {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--good-soft);
+  color: var(--good);
+}
+.pend-done p {
+  margin: 0;
+  font-weight: 600;
+}
+@media (max-width: 360px) {
+  .pend-call span {
+    display: none;
+  }
+}

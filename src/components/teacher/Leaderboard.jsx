@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import Icon from '@/components/common/Icon';
 import { useLang } from '@/context/LanguageContext';
-import { rangeFor, rankStudents, watchResults } from '@/services/resultsRepo';
+import { pendingToday, rangeFor, rankStudents, watchResults } from '@/services/resultsRepo';
+import { formatDateKey, todayKey } from '@/utils/date';
 import Podium from './Podium';
 import WinnersHistory from './WinnersHistory';
 
@@ -15,8 +17,10 @@ const SCOPES = [
 export default function Leaderboard() {
   const { t } = useLang();
   const [scope, setScope] = useState('week');
+  const [filter, setFilter] = useState('all'); // 'all' | 'pending' (not done today)
   const [results, setResults] = useState(null);
   const [error, setError] = useState(false);
+  const [recent, setRecent] = useState(null); // last ACTIVE_DAYS days, for the "आज बाकी" list
 
   useEffect(() => {
     if (scope === 'winners') return undefined;
@@ -33,7 +37,13 @@ export default function Leaderboard() {
     );
   }, [scope]);
 
+  useEffect(() => {
+    const [from, to] = rangeFor('active');
+    return watchResults(from, to, setRecent, () => setRecent([]));
+  }, []);
+
   const rows = useMemo(() => (results ? rankStudents(results) : []), [results]);
+  const pending = useMemo(() => (recent ? pendingToday(recent, todayKey()) : null), [recent]);
 
   return (
     <div className="pad stack results">
@@ -45,8 +55,68 @@ export default function Leaderboard() {
         ))}
       </div>
 
-      {scope === 'winners' ? <WinnersHistory /> : <Ranking results={results} error={error} rows={rows} />}
+      {scope !== 'winners' && (
+        <div className="lbfilter" role="group" aria-label={t('विद्यार्थी दिखाएँ')}>
+          <button className={filter === 'all' ? 'on' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>
+            {t('सभी विद्यार्थी')}
+          </button>
+          <button
+            className={`pend${filter === 'pending' ? ' on' : ''}`}
+            aria-pressed={filter === 'pending'}
+            onClick={() => setFilter('pending')}
+          >
+            {t('आज बाकी')}
+            <span className="cnt">{pending ? pending.length : '…'}</span>
+          </button>
+        </div>
+      )}
+
+      {scope === 'winners' ? (
+        <WinnersHistory />
+      ) : filter === 'pending' ? (
+        <PendingList pending={pending} />
+      ) : (
+        <Ranking results={results} error={error} rows={rows} />
+      )}
     </div>
+  );
+}
+
+/** Students who practised in the last 30 days (ACTIVE_DAYS) but not today: name, last day, call button. */
+function PendingList({ pending }) {
+  const { t, cal } = useLang();
+  if (!pending) return <p className="note">{t('परिणाम लोड हो रहे हैं…')}</p>;
+  return (
+    <>
+      {/* the 30 here is ACTIVE_DAYS: change both together */}
+      <p className="note pend-note">{t('पिछले 30 दिनों में अभ्यास करने वाले वे विद्यार्थी, जिन्होंने आज का अभ्यास अभी नहीं किया।')}</p>
+      {pending.length ? (
+        <section className="lb pendlist" aria-label={t('आज बाकी')}>
+          {pending.map((s) => (
+            <div key={s.mobile} className="pend-row">
+              <span className="pend-av" aria-hidden="true">
+                {String(s.name || '?').trim().charAt(0)}
+              </span>
+              <span className="lb-name">
+                {s.name}
+                <small>
+                  {t('आखिरी अभ्यास:')} {formatDateKey(s.lastDate, cal)}
+                </small>
+              </span>
+              <a className="pend-call" href={`tel:${s.mobile}`} aria-label={`${t('फ़ोन करें')} ${s.name}`}>
+                <Icon name="phone" size={18} />
+                <span>{s.mobile}</span>
+              </a>
+            </div>
+          ))}
+        </section>
+      ) : (
+        <div className="pend-done">
+          <Icon name="check" size={26} />
+          <p>{t('सभी विद्यार्थियों ने आज का अभ्यास कर लिया है।')}</p>
+        </div>
+      )}
+    </>
   );
 }
 
