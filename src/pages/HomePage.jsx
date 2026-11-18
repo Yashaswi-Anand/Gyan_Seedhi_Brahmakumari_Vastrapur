@@ -124,23 +124,8 @@ export default function HomePage() {
         </button>
       </div>
 
-      {isTeacher ? (
-        // teacher: this week's top 3 students, then any date's question paper
-        <>
-          <TopThreeCard />
-          <DatePdfCard />
-        </>
-      ) : (
-        <button className="dlrow" onClick={onPdf} disabled={pdf.busy || !count}>
-          <span className="dlic">
-            <Icon name="download" size={24} />
-          </span>
-          <span>
-            <b>{t('आज के प्रश्न PDF में डाउनलोड करें')}</b>
-            <small>{t(pdf.msg || 'बिना उत्तर के, सभी प्रश्न और विकल्प')}</small>
-          </span>
-        </button>
-      )}
+      {/* teacher: this week's top 3 students */}
+      {isTeacher && <TopThreeCard />}
 
       {!played ? (
         <div className="wrow off">
@@ -206,6 +191,21 @@ export default function HomePage() {
       )}
 
       {!isTeacher && <PracticeCalendar user={user} />}
+
+      {/* question paper PDF, at the bottom of the page: today's for students, any date's for the teacher */}
+      {isTeacher ? (
+        <DatePdfCard />
+      ) : (
+        <button className="dlrow" onClick={onPdf} disabled={pdf.busy || !count}>
+          <span className="dlic">
+            <Icon name="download" size={24} />
+          </span>
+          <span>
+            <b>{t('आज के प्रश्न PDF में डाउनलोड करें')}</b>
+            <small>{t(pdf.msg || 'बिना उत्तर के, सभी प्रश्न और विकल्प')}</small>
+          </span>
+        </button>
+      )}
     </>
   );
 }
