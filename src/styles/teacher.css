@@ -1122,9 +1122,6 @@
   background: rgba(255, 255, 255, 0.25);
   color: #fff;
 }
-.pend-note {
-  margin: 0;
-}
 .pend-row {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr) auto;

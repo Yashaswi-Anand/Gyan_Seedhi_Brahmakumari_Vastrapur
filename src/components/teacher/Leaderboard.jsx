@@ -88,8 +88,6 @@ function PendingList({ pending }) {
   if (!pending) return <p className="note">{t('परिणाम लोड हो रहे हैं…')}</p>;
   return (
     <>
-      {/* the 30 here is ACTIVE_DAYS: change both together */}
-      <p className="note pend-note">{t('पिछले 30 दिनों में अभ्यास करने वाले वे विद्यार्थी, जिन्होंने आज का अभ्यास अभी नहीं किया।')}</p>
       {pending.length ? (
         <section className="lb pendlist" aria-label={t('आज बाकी')}>
           {pending.map((s) => (
