@@ -84,11 +84,11 @@ function reducer(state, a) {
     }
 
     case 'fifty': {
-      if (!game.fifty || q.done || a.remove == null) return state;
+      if (!game.fifty || q.done || !a.remove?.length) return state;
       return {
         ...state,
         game: { ...game, fifty: false },
-        q: { ...q, removed: [...q.removed, a.remove], sel: q.sel === a.remove ? null : q.sel },
+        q: { ...q, removed: [...q.removed, ...a.remove], sel: a.remove.includes(q.sel) ? null : q.sel },
       };
     }
 
@@ -170,13 +170,15 @@ export function useQuizEngine(questions, practice) {
   const actions = {
     pick: (k) => dispatch({ type: 'pick', k }),
     lock: () => dispatch({ type: 'lock', now: Date.now() }),
+    // 50:50 leaves the right answer and one wrong one: 4 options lose 2, 3 options lose 1
+    // (wrong answers already tried count as gone)
     fifty: () => {
       if (!question.opts || question.opts.length < 3) return;
       const c = question.opts
         .map((_, k) => k)
         .filter((k) => k !== question.ans && !q.removed.includes(k) && !q.struck.includes(k));
-      if (!c.length) return;
-      dispatch({ type: 'fifty', remove: c[Math.floor(Math.random() * c.length)] });
+      if (c.length < 2) return;
+      dispatch({ type: 'fifty', remove: shuffle(c).slice(0, c.length - 1) });
     },
     hint: () => dispatch({ type: 'hint' }),
     selfInput: (value) => {

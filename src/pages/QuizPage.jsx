@@ -80,7 +80,13 @@ function Quiz({ questions, practice }) {
       )}
 
       <Lifelines
-        canFifty={game.fifty && canLifeline && question.opts.length > 2}
+        canFifty={
+          game.fifty &&
+          canLifeline &&
+          question.opts.length > 2 &&
+          // at least two wrong options still showing, so one can be removed and one kept
+          question.opts.filter((_, k) => k !== question.ans && !q.struck.includes(k)).length >= 2
+        }
         canHint={game.hint && canLifeline && !!question.hint}
         onFifty={actions.fifty}
         onHint={actions.hint}
