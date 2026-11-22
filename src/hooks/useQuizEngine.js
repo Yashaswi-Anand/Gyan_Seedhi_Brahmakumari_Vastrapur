@@ -1,8 +1,8 @@
 /* Quiz engine: question flow, timer, lifelines and scoring.
    Scoring per question: right on 1st try = full marks, 2nd try = half, later = 0, timeout = 0.
-   Chart (self-check) questions score whatever the person enters (0–20). */
+   Chart (self-check) questions score whatever the person enters (0 up to the question's own marks, 10 or 20). */
 import { useEffect, useReducer, useState } from 'react';
-import { POINTS_PER_QUESTION as PERQ, TIME_LIMIT as TLIM } from '@/constants/config';
+import { maxMarks, POINTS_PER_QUESTION as PERQ, TIME_LIMIT as TLIM } from '@/constants/config';
 import { shuffle } from '@/utils/helpers';
 
 const MSG_RETRY = 'फिर से कोशिश करें। शान्ति से सोचकर दूसरा उत्तर चुनें।';
@@ -75,7 +75,7 @@ function reducer(state, a) {
         if (q.sv == null) return state;
         const elapsed = (a.now - q.start) / 1000;
         const res = game.res.slice();
-        res[game.i] = { pts: q.sv, first: q.sv === PERQ, time: Math.min(TLIM, Math.round(elapsed)), timeout: false, mode: 'num' };
+        res[game.i] = { pts: q.sv, first: q.sv === maxMarks(question), time: Math.min(TLIM, Math.round(elapsed)), timeout: false, mode: 'num' };
         return { ...state, game: { ...game, res }, q: { ...q, done: true, leftAt: Math.max(0, TLIM - elapsed) } };
       }
       if (q.sel == null) return state;
@@ -184,7 +184,7 @@ export function useQuizEngine(questions, practice) {
     selfInput: (value) => {
       const raw = String(value).replace(/\D/g, '').slice(0, 2);
       const n = raw === '' ? null : parseInt(raw, 10);
-      const ok = n != null && n >= 0 && n <= PERQ;
+      const ok = n != null && n >= 0 && n <= maxMarks(question);
       dispatch({ type: 'selfInput', raw, bad: raw !== '' && !ok, sv: ok ? n : null });
     },
     matchLeft: (k) => dispatch({ type: 'matchLeft', k }),

@@ -36,7 +36,7 @@ service cloud.firestore {
 
     // questions/{id}: one question for one date (published == false means a draft students don't see)
     function validQuestion(d) {
-      return d.keys().hasOnly(['date', 'category', 'q', 'opts', 'ans', 'hint', 'exp', 'tag', 'title', 'i18n', 'published', 'order', 'createdAt', 'updatedAt'])
+      return d.keys().hasOnly(['date', 'category', 'q', 'opts', 'ans', 'hint', 'exp', 'tag', 'title', 'max', 'i18n', 'published', 'order', 'createdAt', 'updatedAt'])
         && validI18n(d)
         && (!('published' in d) || d.published is bool)
         && isDateKey(d.date)
@@ -48,7 +48,9 @@ service cloud.firestore {
         && optText(d, 'title', 120)
         && (d.category == 'chart'
             || (d.opts is list && d.opts.size() >= 2 && d.opts.size() <= 4 && isIntIn(d.ans, 0, d.opts.size() - 1)))
-        && (!('order' in d) || d.order is number);
+        && (!('order' in d) || d.order is number)
+        // chart only: most marks the student can give themselves (20 when not set)
+        && (!('max' in d) || (d.category == 'chart' && d.max in [10, 20]));
     }
 
     // results/{mobile}_{date}: a student's saved result for one day

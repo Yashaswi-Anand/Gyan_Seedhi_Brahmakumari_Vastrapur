@@ -6,6 +6,7 @@ import { translateName } from '@/i18n/translate';
 import { translateWithAi } from '@/services/translateApi';
 import { todayKey } from '@/utils/date';
 import DateField from '@/components/common/DateField';
+import { CHART_MARKS, POINTS_PER_QUESTION } from '@/constants/config';
 
 const TAGS = ['सही उत्तर चुनें', 'खाली जगह भरें', 'सही या गलत'];
 const MAX_OPTS = 4;
@@ -32,6 +33,7 @@ function emptyForm() {
     category: 'murli',
     tag: TAGS[0],
     ans: null,
+    max: POINTS_PER_QUESTION,
     active: 'hi',
     text: { hi: blank(3), en: blank(3), gu: blank(3) },
   };
@@ -77,6 +79,7 @@ function fromQuestion(x) {
     category: x.category,
     tag: x.tag || TAGS[0],
     ans: x.category === 'murli' ? x.ans : null,
+    max: x.max ?? POINTS_PER_QUESTION,
     active,
     text,
   };
@@ -104,7 +107,7 @@ function toPayload(f) {
   const langs = filled(f);
   const main = f.text[langs[0]];
   const i18n = Object.fromEntries(langs.map((c) => [c, f.text[c]]));
-  return { date: f.date, category: f.category, tag: f.tag, ans: f.ans, ...main, i18n };
+  return { date: f.date, category: f.category, tag: f.tag, ans: f.ans, max: f.max, ...main, i18n };
 }
 
 /**
@@ -246,6 +249,27 @@ export default function QuestionForm({ initial, onSave, onClose }) {
           </div>
         </div>
 
+        {/* chart: how many marks the student can give themselves for this question */}
+        {!murli && (
+          <div className="qf">
+            <span>{t('अंक')}</span>
+            <div className="qf-seg" role="radiogroup">
+              {CHART_MARKS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  aria-checked={f.max === m}
+                  className={f.max === m ? 'on chart' : ''}
+                  onClick={() => set({ max: m })}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {murli && (
           <label className="qf">
             <span>{t('प्रश्न का प्रकार')}</span>
@@ -362,7 +386,13 @@ export default function QuestionForm({ initial, onSave, onClose }) {
             </label>
           </>
         ) : (
-          <p className="note">{t('चार्ट प्रश्न में विद्यार्थी स्वयं 0 से 20 अंक लिखते हैं, इसलिए सही उत्तर नहीं होता।')}</p>
+          <p className="note">
+            {t(
+              f.max === 10
+                ? 'चार्ट प्रश्न में विद्यार्थी स्वयं 0 से 10 अंक लिखते हैं, इसलिए सही उत्तर नहीं होता।'
+                : 'चार्ट प्रश्न में विद्यार्थी स्वयं 0 से 20 अंक लिखते हैं, इसलिए सही उत्तर नहीं होता।',
+            )}
+          </p>
         )}
 
         {error && (

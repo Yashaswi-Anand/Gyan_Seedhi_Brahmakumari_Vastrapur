@@ -1,7 +1,7 @@
 /* Question paper PDF (no answers).
    Each A4 page is drawn on a canvas so the browser shapes Hindi / Gujarati text correctly,
    then the JPEG pages are wrapped in a minimal PDF file. No PDF library needed. */
-import { CENTRE_NAME, POINTS_PER_QUESTION } from '@/constants/config';
+import { CENTRE_NAME, maxMarks, POINTS_PER_QUESTION } from '@/constants/config';
 import { OPTION_LETTERS } from '@/i18n/calendar';
 import { translate, translateName } from '@/i18n/translate';
 import { todayKey } from '@/utils/date';
@@ -84,17 +84,19 @@ function drawPages(lang, qs, dateLabel, heading, sub) {
   };
 
   const qn = qs.filter((x) => x.type !== 'self').length;
+  const each = (n) => ` · ${T('हर प्रश्न ')}${n}${T(' अंक')}`;
+  // chart questions can carry different marks (10 or 20): the heading shows "each n" only when they match
+  const chartMarks = [...new Set(qs.filter((x) => x.type === 'self').map(maxMarks))];
   qs.forEach((q, k) => {
-    const marks = ` · ${T('हर प्रश्न ')}${POINTS_PER_QUESTION}${T(' अंक')}`;
-    if (k === 0 && q.type !== 'self') section(`${T('मुरली प्रश्न')} (1–${qn})${marks}`, '#C2455A');
+    if (k === 0 && q.type !== 'self') section(`${T('मुरली प्रश्न')} (1–${qn})${each(POINTS_PER_QUESTION)}`, '#C2455A');
     if (q.type === 'self' && (k === 0 || qs[k - 1].type !== 'self')) {
       if (k > 0) y += 14;
-      section(`${T('चार्ट प्रश्न')} (${k + 1}–${qs.length})${marks}`, '#A87A22');
+      section(`${T('चार्ट प्रश्न')} (${k + 1}–${qs.length})${chartMarks.length === 1 ? each(chartMarks[0]) : ''}`, '#A87A22');
     }
     const sub = TQ(q.type === 'self' ? q.ctxChip : q.tag);
     const ql = wrap(TQ(q.q), 29, 600, TW);
     const ol = [];
-    if (q.type === 'self') ol.push([wrap('________ / ' + POINTS_PER_QUESTION, 27, 400, TW), '']);
+    if (q.type === 'self') ol.push([wrap('________ / ' + maxMarks(q), 27, 400, TW), '']);
     else q.opts.forEach((o, i) => ol.push([wrap(TQ(o), 27, 400, TW - 58), LT[i] + ')']));
     const h = 36 + ql.length * 44 + 14 + ol.reduce((s, x) => s + x[0].length * 40 + 10, 0) + 30;
     fit(h);

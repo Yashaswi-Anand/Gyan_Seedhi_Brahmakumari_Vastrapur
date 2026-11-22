@@ -1,5 +1,9 @@
-/** Marks per question (same for every question). */
+/** Marks per murli question; chart questions carry 10 or 20 (see CHART_MARKS). */
 export const POINTS_PER_QUESTION = 20;
+/** Marks a chart question can carry (the teacher picks one per question; 20 when not set). */
+export const CHART_MARKS = [10, 20];
+/** Most marks a question can give: murli questions always 20, chart questions their own `max`. */
+export const maxMarks = (q) => (q?.type === 'self' && CHART_MARKS.includes(q.max) ? q.max : POINTS_PER_QUESTION);
 
 /**
  * Mobile numbers that get the Teacher role (Question/Answer tab and the student ranking).

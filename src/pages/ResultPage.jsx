@@ -7,7 +7,6 @@ import AnswerList from '@/components/results/AnswerList';
 import Celebration from '@/components/results/Celebration';
 import GrowthTree from '@/components/tree/GrowthTree';
 import WheelBlock from '@/components/wheel/WheelBlock';
-import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
 import { daysInMonth, leafCount, treeStage } from '@/services/stats';
@@ -39,7 +38,7 @@ export default function ResultPage() {
   if (!lastQuiz) return <Navigate to="/" replace />;
   const { qs, res, summary: R } = lastQuiz;
   const leaves = leafCount(user);
-  const total = qs.length * PERQ;
+  const total = R.mMax + R.cMax;
 
   const firstLine =
     lang === 'en'
@@ -75,7 +74,7 @@ export default function ResultPage() {
             </div>
             <p className="hsub">{firstLine}</p>
           </div>
-          <PointsSplit murli={R.mp} chart={R.sp} murliMax={R.qn * PERQ} chartMax={R.sn * PERQ} />
+          <PointsSplit murli={R.mp} chart={R.sp} murliMax={R.mMax} chartMax={R.cMax} />
         </section>
 
         {/* the tree with today's leaf growing on, every time */}

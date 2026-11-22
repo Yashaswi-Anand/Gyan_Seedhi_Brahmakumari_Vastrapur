@@ -15,6 +15,7 @@ export function buildAnswers(qs, res) {
     const a = { type: q.type, tag: q.tag, q: q.q, pts: r.pts, first: !!r.first, timeout: !!r.timeout };
     if (q.type === 'self') {
       if (q.ctxChip) a.title = q.ctxChip;
+      if (q.max) a.max = q.max;
     } else {
       a.opts = q.opts;
       a.ans = q.ans;
@@ -56,6 +57,6 @@ export const hasAnswers = (play) => !!play.answers?.length && play.date >= answe
 export function answerToQuestion(a) {
   registerQuestionTranslations([{ q: a.q, opts: a.opts, exp: a.exp, title: a.title, i18n: a.i18n }]);
   return a.type === 'self'
-    ? { type: 'self', tag: a.tag, q: a.q, ctxChip: a.title || '' }
+    ? { type: 'self', tag: a.tag, q: a.q, ctxChip: a.title || '', max: a.max }
     : { type: a.type || 'mcq', tag: a.tag, q: a.q, opts: a.opts || [], ans: a.ans, exp: a.exp || '' };
 }

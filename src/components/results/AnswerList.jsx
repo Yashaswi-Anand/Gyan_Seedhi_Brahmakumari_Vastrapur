@@ -1,18 +1,19 @@
-import { POINTS_PER_QUESTION as PERQ } from '@/constants/config';
+import { maxMarks } from '@/constants/config';
 import { useLang } from '@/context/LanguageContext';
 
 /** One question: right answer (or chart marks), the student's earlier wrong picks, and the explanation on tap. */
 function AnswerRow({ q, r, k }) {
   const { t, tq } = useLang();
   const self = q.type === 'self';
+  const max = maxMarks(q);
   const answer = self
     ? r.timeout
       ? t('समय पूरा हुआ')
-      : `${r.pts} / ${PERQ}`
+      : `${r.pts} / ${max}`
     : q.type === 'match'
       ? q.pairs.map((p) => `${tq(p[0])} → ${tq(p[1])}`).join('\n')
       : tq(q.opts[q.ans]);
-  const icCls = self ? (r.pts === PERQ ? 'y' : r.pts ? 'r' : 'n') : r.first ? 'y' : r.timeout ? 'n' : 'r';
+  const icCls = self ? (r.pts === max ? 'y' : r.pts ? 'r' : 'n') : r.first ? 'y' : r.timeout ? 'n' : 'r';
   const icTxt = self ? (r.timeout ? '⏱' : r.pts) : r.first ? '✓' : r.timeout ? '⏱' : '↻';
   const label = t(`प्रश्न ${k + 1} · `) + (self ? t('चार्ट · ') + tq(q.ctxChip) : t('मुरली · ') + tq(q.tag));
   const wrong = !self && q.opts ? (r.wrong || []).filter((i) => q.opts[i] != null) : [];

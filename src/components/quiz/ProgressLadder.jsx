@@ -1,11 +1,11 @@
-import { POINTS_PER_QUESTION } from '@/constants/config';
 import { useLang } from '@/context/LanguageContext';
 
 /**
  * Step bar, one step per question.
  * @param gapAt index of the first chart question; a small gap separates murli and chart steps
+ * @param marks most marks the current question gives (murli 20, chart 10 or 20)
  */
-export default function ProgressLadder({ total, index, gapAt = -1 }) {
+export default function ProgressLadder({ total, index, gapAt = -1, marks }) {
   const { t } = useLang();
   return (
     <div className="ladder">
@@ -20,8 +20,8 @@ export default function ProgressLadder({ total, index, gapAt = -1 }) {
         ))}
       </div>
       <div className="pts">
-        {t('हर प्रश्न ')}
-        <b>{POINTS_PER_QUESTION}</b>
+        {t('इस प्रश्न के ')}
+        <b>{marks}</b>
         {t(' अंक')}
       </div>
     </div>

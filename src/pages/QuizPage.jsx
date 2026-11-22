@@ -9,6 +9,7 @@ import QuestionCard from '@/components/quiz/QuestionCard';
 import QuitSheet from '@/components/quiz/QuitSheet';
 import QuizHeader from '@/components/quiz/QuizHeader';
 import SelfScoreInput from '@/components/quiz/SelfScoreInput';
+import { maxMarks } from '@/constants/config';
 import { useApp } from '@/context/AppContext';
 import { useLang } from '@/context/LanguageContext';
 import { useQuestions } from '@/context/QuestionsContext';
@@ -71,6 +72,7 @@ function Quiz({ questions, practice }) {
         total={game.qs.length}
         index={game.i}
         gapAt={game.qs.findIndex((x) => x.type === 'self')}
+        marks={maxMarks(question)}
       />
 
       {game.practice && (
@@ -105,7 +107,7 @@ function Quiz({ questions, practice }) {
       {isMatch ? (
         <MatchBoard question={question} state={q} onLeft={actions.matchLeft} onRight={actions.matchRight} />
       ) : isSelf ? (
-        <SelfScoreInput state={q} onChange={actions.selfInput} onSubmit={submitSelf} />
+        <SelfScoreInput question={question} state={q} onChange={actions.selfInput} onSubmit={submitSelf} />
       ) : (
         <OptionList question={question} state={q} onPick={actions.pick} />
       )}
