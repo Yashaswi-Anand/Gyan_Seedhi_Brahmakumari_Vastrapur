@@ -9,6 +9,7 @@
      self  – self-check "chart" question; the person enters their own marks 0–max (10 or 20)
      match – (supported by the quiz engine, not used today) `pairs: [[left, right], …]`
 */
+import { chartMarksOf } from '../constants/config.js'; // relative: scripts/check-translations.mjs loads this file in plain Node
 
 /** Today's five murli questions (1–5). */
 export const MURLI_QUESTIONS = [
@@ -118,7 +119,7 @@ export function seedQuestionDocs() {
 /** Firestore question document → the shape the quiz engine uses. */
 export function toQuizQuestion(d) {
   if (d.category === 'chart') {
-    return { id: d.id, type: 'self', tag: 'चार्ट', ctxChip: d.title || '', q: d.q, max: d.max, i18n: d.i18n };
+    return { id: d.id, type: 'self', tag: 'चार्ट', ctxChip: d.title || '', q: d.q, max: chartMarksOf(d), i18n: d.i18n };
   }
   return {
     id: d.id,

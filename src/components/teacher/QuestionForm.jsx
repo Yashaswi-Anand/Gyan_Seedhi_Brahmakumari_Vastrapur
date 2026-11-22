@@ -6,7 +6,7 @@ import { translateName } from '@/i18n/translate';
 import { translateWithAi } from '@/services/translateApi';
 import { todayKey } from '@/utils/date';
 import DateField from '@/components/common/DateField';
-import { CHART_MARKS, POINTS_PER_QUESTION } from '@/constants/config';
+import { CHART_MARKS, chartMarksOf, POINTS_PER_QUESTION } from '@/constants/config';
 
 const TAGS = ['सही उत्तर चुनें', 'खाली जगह भरें', 'सही या गलत'];
 const MAX_OPTS = 4;
@@ -77,9 +77,9 @@ function fromQuestion(x) {
   return {
     date: x.date,
     category: x.category,
-    tag: x.tag || TAGS[0],
+    tag: x.category === 'murli' && x.tag ? x.tag : TAGS[0],
     ans: x.category === 'murli' ? x.ans : null,
-    max: x.max ?? POINTS_PER_QUESTION,
+    max: x.category === 'chart' ? chartMarksOf(x) : POINTS_PER_QUESTION,
     active,
     text,
   };

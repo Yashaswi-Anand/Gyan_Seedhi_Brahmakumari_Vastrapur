@@ -20,6 +20,7 @@ import {
 } from '@/services/questionsRepo';
 import { formatDateKey, parseDateKey, todayKey } from '@/utils/date';
 import DateField from '@/components/common/DateField';
+import { chartMarksOf } from '@/constants/config';
 
 /** Group questions by date, newest date first. */
 function byDate(list) {
@@ -63,7 +64,7 @@ function QuestionItem({ q, n, onEdit, onDelete }) {
         </ol>
       ) : (
         <p className="qa-self">
-          {t(q.max === 10 ? 'स्व-मूल्यांकन: विद्यार्थी 0 से 10 अंक स्वयं देते हैं' : 'स्व-मूल्यांकन: विद्यार्थी 0 से 20 अंक स्वयं देते हैं')}
+          {t(chartMarksOf(q) === 10 ? 'स्व-मूल्यांकन: विद्यार्थी 0 से 10 अंक स्वयं देते हैं' : 'स्व-मूल्यांकन: विद्यार्थी 0 से 20 अंक स्वयं देते हैं')}
         </p>
       )}
 

@@ -2,6 +2,16 @@
 export const POINTS_PER_QUESTION = 20;
 /** Marks a chart question can carry (the teacher picks one per question; 20 when not set). */
 export const CHART_MARKS = [10, 20];
+/**
+ * Marks of a chart question document. Stored in its `tag` ("10" or "20"), which the live
+ * Firestore rules already allow on chart questions; a `max` field is read too, for the day the
+ * rules allow it. 20 when neither is set.
+ */
+export function chartMarksOf(d) {
+  if (CHART_MARKS.includes(d?.max)) return d.max;
+  const n = Number(d?.tag);
+  return CHART_MARKS.includes(n) ? n : POINTS_PER_QUESTION;
+}
 /** Most marks a question can give: murli questions always 20, chart questions their own `max`. */
 export const maxMarks = (q) => (q?.type === 'self' && CHART_MARKS.includes(q.max) ? q.max : POINTS_PER_QUESTION);
 
