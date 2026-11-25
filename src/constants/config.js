@@ -1,9 +1,9 @@
-/** Marks per murli question; chart questions carry 10 or 20 (see CHART_MARKS). */
+/** Marks per murli question; chart questions carry their own marks (see CHART_MARKS). */
 export const POINTS_PER_QUESTION = 20;
 /** Marks a chart question can carry (the teacher picks one per question; 20 when not set). */
-export const CHART_MARKS = [10, 20];
+export const CHART_MARKS = [10, 15, 20, 25];
 /**
- * Marks of a chart question document. Stored in its `tag` ("10" or "20"), which the live
+ * Marks of a chart question document. Stored in its `tag` (e.g. "15"), which the live
  * Firestore rules already allow on chart questions; a `max` field is read too, for the day the
  * rules allow it. 20 when neither is set.
  */
